@@ -1,0 +1,855 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <meta name="viewport"
+          content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"/>
+    <title>聊天界面</title>
+    <link rel="stylesheet" type="text/css" href="chat.css?t=3"/>
+
+    <script src="js/jquery.min.js"></script>
+    <script src="js/flexible.js"></script>
+    <script src="./../pc/assets/css/common.js?t=1"></script>
+    <script src="js/vue.js"></script>
+    <script src="js/vue-resource.js"></script>
+    <style type="text/css">
+        .footer {
+            /*position: relative;*/
+        }
+
+        #emoji {
+            width: 100%;
+            height: 1.5rem;
+            position: absolute;
+            top: -1.5rem;
+            margin: 0;
+            padding: 0;
+            display: none;
+
+            border: 1px solid red;
+        }
+
+        #emoji_list {
+            list-style: none;
+            height: 100%;
+            width: 100%;
+            padding: 0;
+            margin: 0;
+        }
+
+        .emoij-icon {
+            float: left;
+            height: 0.5rem;
+            line-height: 0.5rem;
+            margin: 0;
+            padding: 0;
+        }
+
+        #text-box {
+            display: inline-block;
+            /*margin-left: 0.2rem;*/
+            width: 4rem;
+            min-height: 0.64rem;
+            border-radius: 0.1rem;
+            border: 0.01rem solid #ddd;
+            /*padding: 0 0.15rem;*/
+            padding: 0;
+            margin: 0;
+
+            position: relative;
+            top: 0.2rem;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            line-height: 0.64rem;
+            line-break: unset;
+        }
+
+        #upload-item {
+            display: none;
+        }
+
+    </style>
+</head>
+
+<body>
+<div id="app">
+    <header class="header">
+        <a class="back" href="javascript:history.back()"></a>
+        <h5 class="tit">{{user.name}}</h5>
+        <!--        <div class="right">资料</div>-->
+    </header>
+    <div class="message">
+        <div v-for="messagesOfDay in messages">
+            <div class="time">{{ messagesOfDay.date }}</div>
+            <div :class="messageItem.sender == customerId ? 'send' : 'send self'"
+                 v-for="messageItem in messagesOfDay.messages">
+                <div class="msg">
+                    <img :src="messageItem.sender == customerId ? guestAvatar : user.avatar" alt=""/>
+                    <i :class="messageItem.sender == customerId ? '' : 'msg_input'" class=""></i>
+                    <p v-if="messageItem.message.fileType == 3">
+                        <img :src="messageItem.message.content"
+                             style="width: 1.5rem;height: 2.6rem;">
+                    </p>
+                    <p v-else v-html="messageItem.message.content">
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!--        <div class="time">05/22 06:30</div>-->
+        <!--        <div class="send self">-->
+        <!--            <div class="msg self">-->
+        <!--                <img src="images/touxiangm.png" alt="" class="self"/>-->
+        <!--                <p class="self"><i clas="msg_input"></i>你好你好你好</p>-->
+        <!--            </div>-->
+        <!--        </div>-->
+    </div>
+    <div class="footer">
+        <div id="emoji" ref="emoji_box">
+            <ul id="emoji_list">
+                <li @click="choseEmoji($event)" class="emoij-icon"><img
+                        src="./emoji/emoji/1.gif" alt=""/></li>
+                <li @click="choseEmoji($event)" class="emoij-icon"><img
+                        src="./emoji/emoji/2.gif" alt=""/></li>
+                <li @click="choseEmoji($event)" class="emoij-icon"><img
+                        src="./emoji/emoji/3.gif" alt=""/></li>
+                <li @click="choseEmoji($event)" class="emoij-icon"><img
+                        src="./emoji/emoji/4.gif" alt=""/></li>
+                <li @click="choseEmoji($event)" class="emoij-icon"><img
+                        src="./emoji/emoji/5.gif" alt=""/></li>
+                <li @click="choseEmoji($event)" class="emoij-icon"><img
+                        src="./emoji/emoji/6.gif" alt=""/></li>
+                <li @click="choseEmoji($event)" class="emoij-icon"><img
+                        src="./emoji/emoji/7.gif" alt=""/></li>
+                <li @click="choseEmoji($event)" class="emoij-icon"><img
+                        src="./emoji/emoji/8.gif" alt=""/></li>
+                <li @click="choseEmoji($event)" class="emoij-icon"><img
+                        src="./emoji/emoji/9.gif" alt=""/></li>
+                <li @click="choseEmoji($event)" class="emoij-icon"><img
+                        src="./emoji/emoji/10.gif" alt=""/></li>
+                <li @click="choseEmoji($event)" class="emoij-icon"><img
+                        src="./emoji/emoji/11.gif" alt=""/></li>
+                <li @click="choseEmoji($event)" class="emoij-icon"><img
+                        src="./emoji/emoji/12.gif" alt=""/></li>
+                <li @click="choseEmoji($event)" class="emoij-icon"><img
+                        src="./emoji/emoji/13.gif" alt=""/></li>
+                <li @click="choseEmoji($event)" class="emoij-icon"><img
+                        src="./emoji/emoji/14.gif" alt=""/></li>
+                <li @click="choseEmoji($event)" class="emoij-icon"><img
+                        src="./emoji/emoji/15.gif" alt=""/></li>
+                <li @click="choseEmoji($event)" class="emoij-icon"><img
+                        src="./emoji/emoji/16.gif" alt=""/></li>
+                <li @click="choseEmoji($event)" class="emoij-icon"><img
+                        src="./emoji/emoji/17.gif" alt=""/></li>
+                <li @click="choseEmoji($event)" class="emoij-icon"><img
+                        src="./emoji/emoji/18.gif" alt=""/></li>
+                <li @click="choseEmoji($event)" class="emoij-icon"><img
+                        src="./emoji/emoji/19.gif" alt=""/></li>
+                <li @click="choseEmoji($event)" class="emoij-icon"><img
+                        src="./emoji/emoji/20.gif" alt=""/></li>
+                <li @click="choseEmoji($event)" class="emoij-icon"><img
+                        src="./emoji/emoji/21.gif" alt=""/></li>
+                <li @click="choseEmoji($event)" class="emoij-icon"><img
+                        src="./emoji/emoji/22.gif" alt=""/></li>
+                <li @click="choseEmoji($event)" class="emoij-icon"><img
+                        src="./emoji/emoji/23.gif" alt=""/></li>
+                <li @click="choseEmoji($event)" class="emoij-icon"><img
+                        src="./emoji/emoji/24.gif" alt=""/></li>
+                <li @click="choseEmoji($event)" class="emoij-icon"><img
+                        src="./emoji/emoji/25.gif" alt=""/></li>
+                <li @click="choseEmoji($event)" class="emoij-icon"><img
+                        src="./emoji/emoji/26.gif" alt=""/></li>
+                <li @click="choseEmoji($event)" class="emoij-icon"><img
+                        src="./emoji/emoji/27.gif" alt=""/></li>
+            </ul>
+        </div>
+        <img src="images/hua.png" alt="" @click="upload"/>
+        <input type="file" name="files" id="upload-item">
+        <img src="images/xiaolian.png" alt="" @click="switchEmojiBox"/>
+        <!-- 模拟textarea Start-->
+        <span id="text-box" contenteditable="true">
+        </span>
+        <!-- 模拟textarea End-->
+        <!--        <input type="text"/>-->
+        <button @click="song" id="send-btn">发送</button>
+    </div>
+</div>
+<script src="js/chat.js?t=2" type="text/javascript" charset="utf-8"></script>
+
+<script>
+    let app = new Vue({
+        el: '#app',
+        data: {
+            messages: [],
+            websocket: null,
+            fd: 0,
+            userId: 0,
+            sessionId: 0,
+            ipAddr: 0,
+
+            customerId: 0,
+            sessionId: 0,
+            userId: 0,
+
+            guestAvatar: '',
+            user: {},
+
+            hasImage: false,
+
+        },
+
+        mounted() {
+            this.guestAvatar = common.guestAvatar;
+            this.getIP(this);
+
+        },
+        created() {
+        },
+        methods: {
+            async getIP(app) {
+                // 旧代码 start
+                // let ip = await this.ip(app);
+                // let userId = this.getQueryVariable('userId');
+                // if (userId == false) {
+                //     // alert('参数错误');
+                //     return;
+                // }
+                // let resStr = this.getcookie('resString');
+                // let resObj;
+                // if (resStr == undefined) {
+                //     resObj = {
+                //         userId: userId,
+                //         sessionId: 0,
+                //         customerId: 0
+                //     };
+                // } else {
+                //     resObj = JSON.parse(resStr);
+                // }
+                // let wsServer = 'ws://127.0.0.1:9502?type=2&userId=' + userId;
+                // wsServer += '&sessionId=' + resObj.sessionId;
+                // wsServer += '&customerId=' + resObj.customerId;
+                // wsServer += '&ip=' + ip;
+                // // alert(wsServer)
+                //
+                // //调用websocket对象建立连接：
+                // //参数：ws/wss(加密)：//ip:port （字符串）
+                // this.websocket = new WebSocket(wsServer);
+                //
+                // let websocket = this.websocket;
+                // //onopen监听连接打开
+                // websocket.onopen = function (evt) {
+                // };
+                //
+                // this.asyncFunc(this.websocket, this.messages);
+                // 旧代码 end
+
+                //ws 断线重连代码 start
+                let heartBeatTime = 120;
+                let heartCheck = {
+                    timeout: heartBeatTime * 1000,  //  心跳检测时长
+                    timeoutObj: null, // 定时变量
+                    reset: function () { // 重置定时
+                        clearTimeout(this.timeoutObj);
+                        return this;
+                    },
+                    start: function () { // 开启定时
+                        let self = this;
+                        this.timeoutObj = setTimeout(function () {
+                            // 心跳时间内收不到消息，主动触发连接关闭，开始重连
+                            app.websocket.close();
+                        }, this.timeout)
+                    }
+                }
+                this.heartCheck = heartCheck;
+                let ip = await this.ip(app);
+                let userId = this.getQueryVariable('userId');
+                if (userId == false) {
+                    alert('参数错误');
+                    return;
+                }
+                let resStr = this.getcookie('resString');
+                let resObj;
+                if (resStr == undefined) {
+                    resObj = {
+                        userId: userId,
+                        sessionId: 0,
+                        customerId: 0
+                    };
+                } else {
+                    resObj = JSON.parse(resStr);
+                }
+                let wsServer = common.wsHost + '?type=2&userId=' + userId;
+                wsServer += '&sessionId=' + resObj.sessionId;
+                wsServer += '&customerId=' + resObj.customerId;
+                wsServer += '&ip=' + ip;
+                this.initEventHandle(wsServer)
+                //ws 断线重连代码 end
+            },
+
+            ip(app) {
+                return new Promise(function (resolve) {
+                    let api = common.api.getIP;
+                    app.$http.get((api), {params: {}}).then(response => {
+                        let jobs = response.body.data;
+                        let ip = jobs.ip;
+                        // // alert(ip)
+                        resolve(ip);
+                    }, response => {
+                        // console.log(response)
+                        // // alert("出问题啦")
+                    }).finally(
+                        response => {
+                            // // alert('over')
+                            // this.reload()
+                        },
+                    );
+                });
+            },
+
+
+            getQueryVariable(variable) {
+                let query = window.location.search.substring(1);
+                let vars = query.split("&");
+                for (let i = 0; i < vars.length; i++) {
+                    let pair = vars[i].split("=");
+                    if (pair[0] == variable) {
+                        return pair[1];
+                    }
+                }
+                return (false);
+            },
+            getcookie(objname) {//获取指定名称的cookie的值
+                let arr = document.cookie.split("; ");
+                for (let i = 0; i < arr.length; i++) {
+                    let temp = arr[i].split("=");
+                    if (temp[0] == objname) return unescape(temp[1]);
+                }
+            },
+            async asyncFunc(websocket, messages) {
+                // alert(777);
+                let res = await this.print2(this.websocket, messages);
+                // alert(888);
+                console.log('res start===================')
+                console.log(res);
+                // alert(this.fd);
+                // alert(this.sessionId);
+                if (this.fd == 0 && this.sessionId == 0) {
+                    this.userId = res.userId;
+                    this.fd = res.fd;
+                    this.sessionId = res.sessionId;
+                    this.customerId = res.customerId;
+                    console.log('res end===================')
+                }
+                // 存储到ccokie中
+                let resString = JSON.stringify(res); // 转字符串.
+                // alert(resString);
+                document.cookie = 'resString=' + resString;
+            },
+            song() {
+                console.log('start:', this.userId, this.fd);
+                let websocket = this.websocket;
+                let content = document.getElementById('text-box').innerHTML;
+                var inputElement = document.getElementById("upload-item");
+                var fileList = inputElement.files;
+                if (fileList.length > 0) {
+                    this.hasImage = true;
+                }
+                if (content == '') {
+                    if (!this.hasImage) {
+                        alert('请输入聊天内容');
+                        return;
+                    }
+                }
+
+                let username = 'user_' + Math.random();
+                let receiverId = this.userId;
+                let userId = this.userId;
+                let sessionId = this.sessionId;
+                let type = 2;
+                let textInfo = type + '|';
+                textInfo += userId + '|';
+                textInfo += this.fd + '|';
+                textInfo += sessionId + '|';
+                textInfo += receiverId + '|' + username + '|';
+                let text = textInfo + content;
+
+                console.log('=========== start');
+                console.log(text);
+                console.log('=========== end');
+                let fileType = 1;           // 文字
+                text += '|' + fileType;
+
+
+                //向服务器发送数据
+                content && websocket.send(text);
+                document.getElementById('text-box').innerHTML = '';
+
+
+                let date = new Date();
+                let year = date.getFullYear();
+                let month = date.getMonth() + 1;
+                let day = date.getDate();
+                let myArr = new Array(year, month, day);
+                let dateText = myArr.join('');
+                let messages = this.messages;
+                let length = messages.length;
+                if (length == 0 || messages[0].date == undefined) {
+                    messages.pop();
+                    let tempItem = {date: dateText, messages: []};
+                    messages.push(tempItem);
+                }
+                for (let i = 0; i < messages.length; i++) {
+                    let item = messages[i];
+                    console.log('messages.forEach ===================== start')
+                    console.log(item);
+                    console.log('messages.forEach ===================== end')
+                    if (item.date == dateText) {
+                        if (content == '') {
+                            break;
+                        }
+                        let item = messages[i].messages;
+                        let value = text.split('|');
+                        let valueLength = value.length;
+                        let fileData = value[valueLength - 2];
+                        let fileType = value[valueLength - 1];
+
+
+                        if (fileType == 3) {
+                            fileData = common.imagePath + fileData;
+                        }
+                        let message = {content: fileData, fileType: fileType,};
+                        item.push({message: message, sender: this.customerId});
+                        console.log('messages.forEach2 ===================== start')
+                        console.log(item);
+                        console.log('messages.forEach2 ===================== end')
+                        messages[i].messages = item;
+                    }
+                }
+
+
+                let ws = websocket;
+                // 发送文件
+
+                for (var i = 0; i < fileList.length; i++) {
+                    // console.log(fileList[i]);
+                    // console.log(fileList[i].name);
+                    // //发送文件名
+                    // let fileType = 2;           // 文件名
+                    // let text = textInfo + fileList[i].name;
+                    // text += '|' + fileType;
+                    // ws.send(text);
+
+                    app.hasImage = true;
+
+                    var reader = new FileReader();
+                    reader.readAsDataURL(fileList[i]);
+                    reader.onload = function (e) {
+                        let fileType = 3;           // 图片
+                        let data = textInfo + e.target.result + '|' + fileType;
+                        ws.send(data);
+
+
+                        let date = new Date();
+                        let year = date.getFullYear();
+                        let month = date.getMonth() + 1;
+                        let day = date.getDate();
+                        let myArr = new Array(year, month, day);
+                        let dateText = myArr.join('');
+                        let messages = app.messages;
+                        console.log('=============let messages = app.messages start')
+                        console.log(messages);
+                        console.log('=============let messages = app.messages end')
+                        let length = messages.length;
+                        if (length == 0 || messages[0].date == undefined) {
+                            messages.pop();
+                            let tempItem = {date: dateText, messages: []};
+                            messages.push(tempItem);
+                        }
+                        for (let i = 0; i < messages.length; i++) {
+                            let item = messages[i];
+                            if (item.date == dateText) {
+                                let item = messages[i].messages;
+                                let value = data.split('|');
+                                let valueLength = value.length;
+                                let fileData = value[valueLength - 2];
+                                let fileType = 3;
+                                let message = {content: fileData, fileType: fileType,};
+                                item.push({message: message, sender: app.customerId});
+                                console.log('messages.forEach ===================== start')
+                                console.log(item);
+                                console.log('messages.forEach ===================== end')
+                                messages[i].messages = item;
+                            }
+                        }
+                    }
+
+                    document.getElementById("upload-item").value = '';
+                }
+            },
+
+            switchEmojiBox() {
+                if (this.$refs.emoji_box.style.display == 'block') {
+                    this.$refs.emoji_box.style.display = 'none';
+                } else {
+                    this.$refs.emoji_box.style.display = 'block';
+                    document.getElementById('text-box').focus();
+                }
+            },
+
+            // 选择表情
+            choseEmoji(e) {
+                let target = e.target;
+                console.log('------------------choseEmoji start')
+                console.log(target.src);
+                console.log('------------------choseEmoji end')
+                let img = document.createElement('img');
+                img.src = target.src;
+
+                let imgTag = '<img src="' + target.src + '" />';
+                this.insertContent(imgTag);
+                this.switchEmojiBox();
+            },
+
+            //在光标位置插入内容
+            insertContent(content) {
+                if (!content) {//如果插入的内容为空则返回
+                    return;
+                }
+                let sel = null;
+                if (document.selection) {//IE9以下
+                    sel = document.selection;
+                    sel.createRange().pasteHTML(content);
+                } else {
+                    sel = window.getSelection();
+                    if (sel.rangeCount > 0) {
+                        let range = sel.getRangeAt(0);      //获取选择范围
+                        range.deleteContents();             //删除选中的内容
+                        let el = document.createElement("div"); //创建一个空的div外壳
+                        el.innerHTML = content;                 //设置div内容为我们想要插入的内容。
+                        let frag = document.createDocumentFragment();//创建一个空白的文档片段，便于之后插入dom树
+
+                        let node = el.firstChild;
+                        let lastNode = frag.appendChild(node);
+                        range.insertNode(frag);                 //设置选择范围的内容为插入的内容
+                        let contentRange = range.cloneRange();  //克隆选区
+                        contentRange.setStartAfter(lastNode);          //设置光标位置为插入内容的末尾
+                        contentRange.collapse(true);                   //移动光标位置到末尾
+                        sel.removeAllRanges();                  //移出所有选区
+                        sel.addRange(contentRange);             //添加修改后的选区
+                    }
+                }
+            },
+
+            upload() {
+                document.getElementById('upload-item').click();
+            },
+
+            dataURLtoBlob(dataurl) {
+                var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+                    bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+                while (n--) {
+                    u8arr[n] = bstr.charCodeAt(n);
+                }
+                return new Blob([u8arr], {type: mime});
+            },
+
+            downloadFile(url, name = 'What\'s the fuvk') {
+                var a = document.createElement("a")
+                a.setAttribute("href", url)
+                a.setAttribute("download", name)
+                a.setAttribute("target", "_blank")
+                let clickEvent = document.createEvent("MouseEvents");
+                clickEvent.initEvent("click", true, true);
+                a.dispatchEvent(clickEvent);
+            },
+
+            downloadFileByBase64(base64, name) {
+                var myBlob = this.dataURLtoBlob(base64)
+                console.log(myBlob);
+                var myUrl = URL.createObjectURL(myBlob)
+                this.downloadFile(myUrl, name)
+            },
+
+            pressMe() {
+                document.getElementById('pic').click();
+            },
+
+            getMessageList(sessionId) {
+                // todo 传递sessionId
+                let api = common.api.messageList;
+                this.$http.get((api), {params: {}}).then(response => {
+                    var jobs = response.body.data;
+                    console.log('==========getMessageList start');
+                    this.messages = jobs;
+                    console.log(this.messages)
+                    console.log('==========getMessageList end');
+                    let messages = this.messages;
+                    for (let i = 0; i < messages.length; i++) {
+
+                        let item = messages[i].messages;
+                        for (let j = 0; j < item.length; j++) {
+                            let value = item[j].message.split('|');
+                            let valueLength = value.length;
+                            let fileData = value[valueLength - 2];
+                            let fileType = value[valueLength - 1];
+                            if (fileType == 3) {
+                                fileData = common.imagePath + fileData;
+                            }
+                            let message = {content: fileData, fileType: fileType,};
+                            item[j].message = message;
+                        }
+                        messages[i].messages = item;
+                    }
+
+                    this.messages = messages;
+
+                    this.asyncFunc(this.websocket, this.messages);
+                }, response => {
+                    // console.log(response)
+                    // alert("出问题啦")
+                }).finally(
+                    response => {
+                        // // alert('over')
+                        // this.reload()
+                    },
+                );
+            },
+
+            // start
+            // 初始化事件函数
+            initEventHandle(wsUrl) {
+                this.createWebSocket(wsUrl);
+                let ws = this.websocket;
+                this.messages = [];
+                // this.asyncFunc(ws, this.messages);
+                ws.onclose = function () {
+                    app.reconnect(wsUrl);
+                };
+                ws.onerror = function (err) {
+                    alert('onerror restart');
+                    app.reconnect(wsUrl);
+                };
+                ws.onopen = function () {
+                    app.heartCheck.reset().start();      //心跳检测重置
+                };
+                ws.onmessage = function (evt) {    //如果获取到消息，心跳检测重置
+                    app.heartCheck.reset().start();      //拿到任何消息都说明当前连接是正常的
+                    let websocket = ws;
+
+                    let type;
+                    let userId;
+                    let fd;
+                    let sessionId;
+                    let customerId;
+                    // $msg = '-1|' . $requestId . '|' . $userId . '|' . $sessionId . '|' . $customerId;
+                    // 1|undefined|1|287|289|user_0.23784549624046902|sdfsdf
+
+                    let data = evt.data;
+                    // alert(data);
+                    let arr = data.split('|');
+                    console.log('print2 ============== start')
+                    console.log(arr);
+                    console.log('print2 ============== end')
+                    if (arr.length > 1) {
+                        // if (userId == 0 && fd == 0) {        // 暂时不确定作用
+                        type = arr[0];
+                        userId = arr[2];
+                        // alert('userId:' + userId);
+                        fd = arr[1];
+                        // alert('fd:' + fd);
+                        sessionId = arr[3];
+                        customerId = arr[4];
+                        console.log('arr start');
+                        console.log(arr);
+                        console.log(userId, fd);
+                        console.log('arr end');
+                        // }
+
+                    } else {
+                        userId = 0;
+                        fd = 0;
+                        sessionId = 0;
+                        customerId = 0;
+                    }
+
+
+                    let ids = {
+                        userId: userId,
+                        fd: fd,
+                        sessionId: sessionId,
+                        customerId: customerId,
+                    };
+
+                    if (app.fd == 0 && app.sessionId == 0) {
+                        app.userId = userId;
+                        app.fd = fd;
+                        app.sessionId = sessionId;
+                        app.customerId = customerId;
+                        console.log('res end===================')
+                        app.getMessageList(sessionId);
+                        app.getServiceInfo(userId);
+                    }
+
+
+                    if (app.userId == 0 && (customerId == 0 || customerId == undefined)) {
+                        ws.close();
+                        document.cookie = 'resString=' + '';
+                        alert('连接失败，请重新打开客服列表选择客服！');
+                        // window.location = location.href;
+                        window.close();
+                    }
+
+                    //
+                    // app.customerId = customerId;
+                    // app.sessionId = sessionId;
+                    // app.userId = userId;
+
+
+                    let date = new Date();
+                    let year = date.getFullYear();
+                    let month = date.getMonth() + 1;
+                    let day = date.getDate();
+                    console.log(year, month, day);
+
+                    // 时间消耗点
+                    // messages一直是空的，现在已经解决
+                    let myArr = new Array(year, month, day);
+                    let dateText = myArr.join('');
+                    console.log(dateText);
+                    let messages = app.messages;
+                    if (length == 0 || messages[0].date == undefined) {
+                        // messages.pop();
+                        let tempItem = {date: dateText, messages: []};
+                        messages.push(tempItem);
+                    }
+                    for (let i = 0; i < messages.length; i++) {
+                        let mmsgItem = messages[i];
+                        console.log('d:' + mmsgItem.date);
+                        console.log('dt:' + dateText);
+                        if (mmsgItem.date == dateText) {
+                            let item = messages[i].messages;
+                            let value = evt.data.split('|');
+                            let valueLength = value.length;
+                            let fileData = value[valueLength - 2];
+                            let fileType = value[valueLength - 1];
+                            if (fileType == 3) {
+                                fileData = common.imagePath + fileData;
+                            }
+                            let message = {content: fileData, fileType: fileType,};
+                            // 不需要想，游客收到的信息，一定是客服发的。
+                            item.push({message: message, sender: app.user.userId});
+                            console.log('messages.forEach ===================== start')
+                            console.log(item);
+                            console.log('messages.forEach ===================== end')
+                            messages[i].messages = item;
+                        }
+                    }
+
+                    // 存储到ccokie中
+                    let res = {
+                        userId: userId,
+                        fd: fd,
+                        sessionId: sessionId,
+                        customerId: customerId,
+                    };
+                    // this.userId = userId;
+                    // this.fd = fd;
+                    // this.sessionId = sessionId;
+                    // this.customerId = customerId;
+                    let resString = JSON.stringify(res); // 转字符串.
+                    // alert(resString);
+                    document.cookie = 'resString=' + resString;
+
+                };
+            },
+            // 重连
+            reconnect(url) {
+                setTimeout(function () {     //没连接上会一直重连，设置延迟避免请求过多
+                    app.createWebSocket(url);
+                }, 2000);
+            },
+            // 实例websocket
+            createWebSocket(url) {
+                let ws;
+                try {
+                    if ('WebSocket' in window) {
+                        ws = new WebSocket(url);
+                    } else if ('MozWebSocket' in window) {
+                        ws = new MozWebSocket(url);
+                    } else {
+                        // alert("当前浏览器不支持websocket协议,建议使用现代浏览器")
+                    }
+                    this.websocket = ws;
+                    this.initEventHandle();
+                } catch (e) {
+                    this.reconnect(url);
+                }
+            },
+            // end
+
+            getMessageList(sessionId) {
+                // todo 传递sessionId
+                let api = common.api.messageList;
+                this.$http.get((api), {params: {session_id:sessionId}}).then(response => {
+                    var jobs = response.body.data;
+                    console.log('==========getMessageList start');
+                    this.messages = jobs;
+                    console.log(this.messages)
+                    console.log('==========getMessageList end');
+                    let messages = this.messages;
+                    for (let i = 0; i < messages.length; i++) {
+
+                        let item = messages[i].messages;
+                        for (let j = 0; j < item.length; j++) {
+                            let value = item[j].message.split('|');
+                            let valueLength = value.length;
+                            let fileData = value[valueLength - 2];
+                            let fileType = value[valueLength - 1];
+                            if (fileType == 3) {
+                                fileData = common.imagePath + fileData;
+                            }
+                            let message = {content: fileData, fileType: fileType,};
+                            item[j].message = message;
+                        }
+                        messages[i].messages = item;
+                    }
+
+                    this.messages = messages;
+                }, response => {
+                    // console.log(response)
+                    alert("出问题啦")
+                }).finally(
+                    response => {
+                        // alert('over')
+                        // this.reload()
+                    },
+                );
+            },
+
+            // 获取客服资料
+            getServiceInfo(userId) {
+                let api = common.api.getService;
+                this.$http.get((api), {params: {'user_id': userId}}).then(response => {
+                    var jobs = response.body.data;
+                    console.log('==========getServiceInfo start');
+                    this.user = jobs;
+                    console.log('==========getServiceInfo end');
+                    this.user.avatar = common.imagePath + this.user.avatar;
+                }, response => {
+                    // console.log(response)
+                    alert("出问题啦")
+                }).finally(
+                    response => {
+                        // alert('over')
+                        // this.reload()
+                    },
+                );
+            },
+        },
+    })
+</script>
+</body>
+
+</html>

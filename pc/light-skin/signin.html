@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <!-- Viewport-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no"/>
+    <!-- SEO Meta Tags-->
+    <meta name="keywords" content="quicky, chat, messenger, conversation, social, communication"/>
+    <meta name="description"
+          content="Quicky is a Bootstrap based modern and fully responsive Messaging template to help build Messaging or Chat application fast and easy."/>
+    <meta name="subject" content="communication">
+    <meta name="copyright" content="frontendmatters">
+    <meta name="revised" content="Sunday, July 18th, 2010, 5:15 pm"/>
+    <title>Quicky - HTML Chat Template</title>
+    <!-- Favicon and Touch Icons-->
+    <link rel="apple-touch-icon" sizes="180x180" href="./../apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="./../favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./../favicon-16x16.png">
+    <link rel="shortcut icon" href="./../favicon.ico"/>
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="theme-color" content="#ffffff">
+
+    <link rel="stylesheet" href="./../assets/webfonts/inter/inter.css">
+    <link rel="stylesheet" href="./../assets/css/app.min.css">
+</head>
+
+<body class="authentication-page">
+<div id="app">
+    <!-- Main Layout Start -->
+    <div class="main-layout card-bg-1">
+        <div class="container d-flex flex-column">
+            <div class="row no-gutters text-center align-items-center justify-content-center min-vh-100">
+                <div class="col-12 col-md-6 col-lg-5 col-xl-4">
+                    <h1 class="font-weight-bold">Sign in</h1>
+                    <p class="text-dark mb-3">We are Different, We Make You Different.</p>
+                    <div class="form-group">
+                        <label for="email" class="sr-only">Email Address</label>
+                        <input type="email" class="form-control form-control-md" id="email" v-model="username"
+                               placeholder="Enter your email">
+                    </div>
+                    <div class="form-group">
+                        <label for="password" class="sr-only">Password</label>
+                        <input type="password" class="form-control form-control-md" id="password"
+                               placeholder="Enter your password" v-model="pwd">
+                    </div>
+                    <button class="btn btn-primary btn-lg btn-block text-uppercase font-weight-semibold"
+                            @click="login">
+                        Sign in
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Main Layout End -->
+</div>
+
+<!-- Javascript Files -->
+<script src="./../assets/vendors/svg-inject/svg-inject.min.js"></script>
+<script src="./../assets/css/common.js"></script>
+<script src="./../assets/css/vue.js"></script>
+<script src="./../assets/css/vue-resource.js"></script>
+
+<script>
+    let app = new Vue({
+        el: '#app',
+        data: {
+            username: '',
+            pwd: '',
+        },
+
+        mounted() {
+        },
+        created() {
+        },
+        methods: {
+            print2(websocket, messages) {
+                return new Promise(function (resolve, reject) {
+                    websocket.onmessage = function (evt) {
+                        let type;
+                        let userId;
+                        let fd;
+                        let sessionId;
+
+                        let data = evt.data;
+                        let arr = data.split('|');
+                        console.log('print2 ============== start')
+                        console.log(arr);
+                        console.log('print2 ============== end')
+                        if (arr.length > 1) {
+                            type = arr[0];
+                            userId = arr[2]
+                            fd = arr[1];
+                            sessionId = arr[3];
+                        } else {
+                            userId = 0;
+                            fd = 0;
+                            sessionId = 0;
+                        }
+
+                        let date = new Date();
+                        let year = date.getFullYear();
+                        let month = date.getMonth() + 1;
+                        let day = date.getDate();
+                        console.log(year, month, day);
+
+                        // 时间消耗点
+                        // messages一直是空的，现在已经解决
+                        let myArr = new Array(year, month, day);
+                        let dateText = myArr.join('');
+                        console.log(dateText);
+                        for (let i = 0; i < messages.length; i++) {
+
+                            let item = messages[i];
+                            if (item.date == dateText) {
+                                // let value = evt.data.split('|');
+                                // let valueLength = value.length;
+                                // let fileData = value[valueLength - 2];
+                                // let fileType = value[valueLength - 1];
+                                // if (fileType == 3) {
+                                //     fileData = common.imagePath + fileData;
+                                // }
+                                // let message = {content: fileData, created_ate: '2020-11-26', fileType: fileType,};
+                                // item.messages.push(message);
+                                // console.log('messages.forEach ===================== start')
+                                // console.log(item);
+                                // console.log('messages.forEach ===================== end')
+                                // messages[i] = item;
+
+
+                                // let item = messages[i].messages;
+                                // for (let j = 0; j < item.length; j++) {
+                                //     let value = evt.data.split('|');
+                                //     let valueLength = value.length;
+                                //     let fileData = value[valueLength - 2];
+                                //     let fileType = value[valueLength - 1];
+                                //     if (fileType == 3) {
+                                //         fileData = common.imagePath + fileData;
+                                //     }
+                                //     let message = {content: fileData, fileType: fileType,};
+                                //     item[j].message = message;
+                                //     console.log('messages.forEach ===================== start')
+                                //     console.log(item);
+                                //     console.log('messages.forEach ===================== end')
+                                // }
+                                // messages[i].messages = item;
+
+
+                                let item = messages[i].messages;
+                                let value = evt.data.split('|');
+                                let valueLength = value.length;
+                                let fileData = value[valueLength - 2];
+                                let fileType = value[valueLength - 1];
+                                if (fileType == 3) {
+                                    fileData = common.imagePath + fileData;
+                                }
+                                let message = {content: fileData, fileType: fileType,};
+                                item.push({message: message});
+                                console.log('messages.forEach ===================== start')
+                                console.log(item);
+                                console.log('messages.forEach ===================== end')
+                                messages[i].messages = item;
+                            }
+                        }
+
+                        let ids = {
+                            userId: userId,
+                            fd: fd,
+                            sessionId: sessionId,
+                            message: evt.data
+                        };
+
+
+                        resolve(ids);
+                    }
+                });
+            },
+            sendMessage() {
+                console.log(this.userId, this.fd);
+                console.log('sendMessage start=====================')
+                let content = document.getElementById('text-box').innerHTML;
+                console.log(content)
+                console.log('sendMessage end=====================')
+
+                if (content == '') {
+                    alert('请输入聊天内容');
+                    return;
+                }
+                // content = this.HTMLEncode(content);
+                let username = 'user_' + Math.random();
+                //|作为数据包分割线
+                let websocket = this.websocket;
+                let receiverId = this.receiverId;
+                let userId = this.userId;
+                let sessionId = this.sessionId;
+                let type = 1;
+                // let text = type + '|';
+                // text += userId + '|';
+                // text += this.fd + '|';
+                // text += sessionId + '|';
+                // text += receiverId + '|' + username + '|' + content;
+                // console.log('============ send start')
+                // console.log(text);
+                // console.log('============ send end')
+
+                let textInfo = type + '|';
+                textInfo += userId + '|';
+                textInfo += this.fd + '|';
+                textInfo += sessionId + '|';
+                textInfo += receiverId + '|' + username + '|';
+                let text = textInfo + content;
+
+                console.log('=========== start');
+                console.log(text);
+                console.log('=========== end');
+                let fileType = 1;           // 文字
+                text += '|' + fileType;
+
+
+                websocket.send(text);
+                this.msg = '';
+                document.getElementById('text-box').innerHTML = '';
+
+
+                let date = new Date();
+                let year = date.getFullYear();
+                let month = date.getMonth() + 1;
+                let day = date.getDate();
+                let myArr = new Array(year, month, day);
+                let dateText = myArr.join('');
+                let messages = this.messages;
+                let length = messages.length;
+                if (length == 0) {
+                    let tempItem = {date: dateText, messages: []};
+                    messages.push(tempItem);
+                }
+                for (let i = 0; i < messages.length; i++) {
+                    let item = messages[i];
+                    if (item.date == dateText) {
+                        let item = messages[i].messages;
+                        let value = text.split('|');
+                        ;
+                        let valueLength = value.length;
+                        let fileData = value[valueLength - 2];
+                        let fileType = value[valueLength - 1];
+
+
+                        if (fileType == 3) {
+                            fileData = common.imagePath + fileData;
+                        }
+                        let message = {content: fileData, fileType: fileType,};
+                        item.push({message: message});
+                        console.log('messages.forEach ===================== start')
+                        console.log(item);
+                        console.log('messages.forEach ===================== end')
+                        messages[i].messages = item;
+                    }
+                }
+
+
+                let ws = websocket;
+                // 发送文件
+                var inputElement = document.getElementById("avatar");
+                var fileList = inputElement.files;
+                for (var i = 0; i < fileList.length; i++) {
+                    console.log(fileList[i]);
+                    console.log(fileList[i].name);
+                    //发送文件名
+                    let fileType = 2;           // 文件名
+                    let text = textInfo + fileList[i].name;
+                    text += '|' + fileType;
+                    ws.send(fileList[i].name);
+
+                    var reader = new FileReader();
+                    reader.readAsDataURL(fileList[i]);
+                    reader.onload = function (e) {
+                        let fileType = 3;           // 图片
+                        let data = textInfo + e.target.result + '|' + fileType;
+                        ws.send(data);
+
+
+                        let date = new Date();
+                        let year = date.getFullYear();
+                        let month = date.getMonth() + 1;
+                        let day = date.getDate();
+                        let myArr = new Array(year, month, day);
+                        let dateText = myArr.join('');
+                        let messages = app.messages;
+                        console.log('=============let messages = app.messages start')
+                        console.log(messages);
+                        console.log('=============let messages = app.messages end')
+                        let length = messages.length;
+                        if (length == 0) {
+                            let tempItem = {date: dateText, messages: []};
+                            messages.push(tempItem);
+                        }
+                        for (let i = 0; i < messages.length; i++) {
+                            let item = messages[i];
+                            if (item.date == dateText) {
+                                let item = messages[i].messages;
+                                let value = data.split('|');
+                                let valueLength = value.length;
+                                let fileData = value[valueLength - 2];
+                                let fileType = 3;
+                                let message = {content: fileData, fileType: fileType,};
+                                item.push({message: message});
+                                console.log('messages.forEach ===================== start')
+                                console.log(item);
+                                console.log('messages.forEach ===================== end')
+                                messages[i].messages = item;
+                            }
+                        }
+                    }
+                }
+                // 上传文件后，需要再次选择文件
+                inputElement.value = '';
+            },
+
+            upload() {
+                document.getElementById('avatar').click();
+            },
+            preview() {
+                var inputElement = document.getElementById("avatar");
+                var fileList = inputElement.files;
+                for (var i = 0; i < fileList.length; i++) {
+                    console.log(fileList[i]);
+                    console.log(fileList[i].name);
+                    var reader = new FileReader();
+                    reader.readAsDataURL(fileList[i]);
+                    reader.onload = function (e) {
+                        let data = e.target.result;
+                        document.getElementById('oldAvatar').src = data;
+                        this.user.newAvatar = data;
+                    }
+                }
+                // 上传文件后，需要再次选择文件
+                inputElement.value = '';
+            },
+
+            // todo 修改用户信息
+            login() {
+                let data = {
+                    name: this.username,
+                    password: this.pwd,
+                };
+                let loginApi = common.api.login;
+                let chatUrl = common.pageUrl.chatUrl;
+                console.log(loginApi)
+                this.$http.post((loginApi), data, {emulateJSON: true}, {},
+                ).then(response => {
+                    let result = response.body;
+                    console.log('登录成功 start');
+                    console.log(result.data.user);
+                    console.log('登录成功 end');
+                    if (result.code == 0) {
+                        let user = result.data.user;
+                        alert(user);
+                        let userStr = JSON.stringify(user); // 转字符串.
+                        alert(userStr);
+                        document.cookie = 'user=' + userStr;
+                        location.href = chatUrl;
+                    } else {
+                        alert(result.msg);
+                    }
+                }, response => {
+                    console.log(response);
+                });
+            },
+        },
+    })
+</script>
+
+</body>
+
+</html>

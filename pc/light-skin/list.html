@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>客服列表</title>
+</head>
+<body>
+<div id="app">
+    <ul>
+        <li v-for="user in users" v-bind:userId="user.id" @click="startChat($event)" style="cursor: pointer;">
+            {{ user.name }}
+        </li>
+    </ul>
+</div>
+<script src="./../assets/css/vue.js"></script>
+<script src="./../assets/css/vue-resource.js"></script>
+<!--<script src="http://pv.sohu.com/cityjson?ie=utf-8"></script>-->
+<!--<script type="text/javascript">-->
+<!--    document.write(returnCitySN["cip"] + ',' + returnCitySN["cname"])  // 110.87.118.246,福建省厦门市-->
+<!--</script>-->
+<script>
+    let app = new Vue({
+        el: '#app',
+        data: {
+            users: [],
+        },
+        methods: {
+            getUsers() {
+                let api = 'http://kf.api-cg.com/api/user/list';
+                this.$http.get((api), {params: {}}).then(response => {
+                    var jobs = response.body.data;
+                    this.users = jobs;
+                }, response => {
+                    // console.log(response)
+                    // alert("出问题啦")
+                }).finally(
+                    response => {
+                        // alert('over')
+                        // this.reload()
+                    },
+                );
+            },
+            startChat(e) {
+                let target = e.target;
+                let userId = target.getAttribute('userId');
+                window.open('http://dev.cg.com/html/ws/phone/index.html?userId=' + userId);
+            }
+        },
+        mounted() {
+            this.getUsers();
+        },
+    });
+</script>
+</body>
+</html>

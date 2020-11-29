@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Vue 测试实例 - 菜鸟教程(runoob.com)</title>
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+</head>
+<body>
+<div id="app">
+    <div id="msg"></div>
+    <div id="message">
+        <p v-for="message in messages">
+            <img :src="message.content" v-if="message.fileType == 3">
+            <span v-else>{{message.content}}</span>
+        </p>
+    </div>
+    <input type="text" id="text">
+    <input type="file" id="pic" style="display: none">
+    <button @click="pressMe">Click</button>
+    <input type="submit" value="发送数据" @click="song">
+</div>
+
+<script>
+    let app = new Vue({
+        el: '#app',
+        data: {
+            messages: [],
+            websocket: null,
+            fd: 0,
+            userId: 0,
+            sessionId: 0,
+        },
+
+        mounted() {
+            let msg = document.getElementById("msg");
+            document.cookie = 'name=赵子龙';
+            var wsServer = 'ws://127.0.0.1:9502?type=2&userId=1';
+
+            //调用websocket对象建立连接：
+            //参数：ws/wss(加密)：//ip:port （字符串）
+            this.websocket = new WebSocket(wsServer);
+            let websocket = this.websocket;
+            //onopen监听连接打开
+            websocket.onopen = function (evt) {
+                //websocket.readyState 属性：
+                /*
+                CONNECTING  0   The connection is not yet open.
+                OPEN    1   The connection is open and ready to communicate.
+                CLOSING 2   The connection is in the process of closing.
+                CLOSED  3   The connection is closed or couldn't be opened.
+                */
+                msg.innerHTML = websocket.readyState;
+                // console.log(evt.data)
+            };
+
+
+            //监听连接关闭
+//    websocket.onclose = function (evt) {
+//        console.log("Disconnected");
+//    };
+
+            //
+            // websocket.onmessage = function (evt) {
+            //     msg.innerHTML += evt.data + '<br>';
+            //     console.log('onmessage start================')
+            //     console.log(evt.data);
+            //     console.log('onmessage end================')
+            //     messages.push(evt.data);
+            // };
+
+            this.asyncFunc(websocket, this.messages);
+
+        },
+        created() {
+        },
+        methods: {
+            async asyncFunc(websocket, messages) {
+                let res = await this.print2(this.websocket, messages);
+                console.log('res start===================')
+                console.log(res);
+                this.userId = res.userId;
+                this.fd = res.fd;
+                this.sessionId = res.sessionId;
+                console.log('res end===================')
+            },
+            print2(websocket, messages) {
+                return new Promise(function (resolve, reject) {
+                    websocket.onmessage = function (evt) {
+                        let type;
+                        let userId;
+                        let fd;
+                        let sessionId;
+
+                        let data = evt.data;
+                        let arr = data.split('|');
+                        console.log('print2 ============== start')
+                        console.log(arr);
+                        console.log('print2 ============== end')
+                        if (arr.length > 1) {
+                            // if (userId == 0 && fd == 0) {        // 暂时不确定作用
+                                type = arr[0];
+                                userId = arr[2];
+                                fd = arr[1];
+                                sessionId = arr[3];
+                                console.log('arr start');
+                                console.log(arr);
+                                console.log(userId, fd);
+                                console.log('arr end');
+                            // }
+
+                        } else {
+                            userId = 0;
+                            fd = 0;
+                            sessionId = 0;
+                        }
+
+                        let message = evt.data;
+                        let value = evt.data.split('|');
+                        let valueLength = value.length;
+                        let fileData = value[valueLength - 2];
+                        let fileType = value[valueLength - 1];
+
+                        if(fileType == 3){
+                            fileData = 'http://dev.cg.com/html/ws/' + fileData;
+                        }
+
+                        let item = {
+                            fileType: fileType,
+                            content: fileData,
+                        };
+
+                        console.log('asyncFunc start================')
+                        messages.push(item);
+                        console.log('asyncFunc end================')
+
+                        //调用FileReader的readAsDataURL的方法自动就会触发onload事件
+
+
+                        console.log('================fileData start');
+                        console.log(fileData)
+                        console.log('================fileData end');
+                        // reader.readAsDataURL(fileData);
+                        // var blob = new Blob([fileData], {
+                        //     type: 'text/plain'
+                        // });
+                        //
+                        // reader.readAsDataURL(blob);
+                        // if (typeof fileData == Object) {
+                        //     reader.readAsDataURL(fileData);
+                        // }
+                        // 接收文件 end
+                        // if (fileData.length > 10) {
+                        //     app.downloadFileByBase64(fileData, 'ggh.png');
+                        // }
+
+                        let ids = {
+                            userId: userId,
+                            fd: fd,
+                            sessionId: sessionId
+                        };
+                        resolve(ids);
+                    }
+                });
+            },
+
+            song() {
+                console.log(this.userId, this.fd);
+                let websocket = this.websocket;
+                let content = document.getElementById('text').value;
+                let username = 'user_' + Math.random();
+                let receiverId = 1;
+                let userId = this.userId;
+                let sessionId = this.sessionId;
+                let type = 2;
+                let textInfo = type + '|';
+                textInfo += userId + '|';
+                textInfo += this.fd + '|';
+                textInfo += sessionId + '|';
+                textInfo += receiverId + '|' + username + '|';
+                let text = textInfo + content;
+
+                console.log('=========== start');
+                console.log(text);
+                console.log('=========== end');
+                let fileType = 1;           // 文字
+                text += '|' + fileType;
+
+
+                document.getElementById('text').value = '';
+                //向服务器发送数据
+                websocket.send(text);
+                let msg = document.getElementById("msg");
+                msg.innerHTML = '<p>' + text + '</p>';
+
+                // return ;
+
+
+                let ws = websocket;
+                // 发送文件
+                var inputElement = document.getElementById("pic");
+                var fileList = inputElement.files;
+                for (var i = 0; i < fileList.length; i++) {
+                    console.log(fileList[i]);
+                    console.log(fileList[i].name);
+                    //发送文件名
+                    let fileType = 2;           // 文件名
+                    let text = textInfo + fileList[i].name;
+                    text += '|' + fileType;
+                    ws.send(fileList[i].name);
+
+                    var reader = new FileReader();
+                    reader.readAsDataURL(fileList[i]);
+                    reader.onload = function (e) {
+                        let fileType = 3;           // 图片
+                        let data = textInfo + e.target.result + '|' + fileType;
+                        ws.send(data);
+                    }
+                }
+            },
+
+
+            dataURLtoBlob(dataurl) {
+                var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+                    bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+                while (n--) {
+                    u8arr[n] = bstr.charCodeAt(n);
+                }
+                return new Blob([u8arr], {type: mime});
+            },
+
+            downloadFile(url, name = 'What\'s the fuvk') {
+                var a = document.createElement("a")
+                a.setAttribute("href", url)
+                a.setAttribute("download", name)
+                a.setAttribute("target", "_blank")
+                let clickEvent = document.createEvent("MouseEvents");
+                clickEvent.initEvent("click", true, true);
+                a.dispatchEvent(clickEvent);
+            },
+
+            downloadFileByBase64(base64, name) {
+                var myBlob = this.dataURLtoBlob(base64)
+                console.log(myBlob);
+                var myUrl = URL.createObjectURL(myBlob)
+                this.downloadFile(myUrl, name)
+            },
+
+            pressMe() {
+                document.getElementById('pic').click();
+            },
+        },
+    })
+</script>
+</body>
+</html>

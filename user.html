@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Vue 测试实例 - 菜鸟教程(runoob.com)</title>
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue-resource/1.5.1/vue-resource.js"></script>
+    <!--    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>-->
+</head>
+<body>
+<style>
+    #message {
+        border: 1px solid #ccc;
+        width: 100%;
+        height: 200px;
+        overflow: auto;
+    }
+
+    #session {
+        border: 1px solid #ccc;
+        width: 100%;
+        height: 200px;
+        overflow: auto;
+    }
+
+    #conent {
+        width: 100%;
+        height: 50px;
+        border: 1px solid #ccc;
+    }
+
+    .main {
+        margin-top: 10px;
+    }
+
+    #sendMessage {
+        width: 100%;
+        border: 1px solid #ccc;
+        background: blue;
+        color: #fff;
+        padding: 10px;
+        font-weight: bold;
+        font-size: 16px;
+    }
+</style>
+<div id="app">
+    <div>
+        <h1>聊天室</h1>
+        <div id="session">
+            <div v-for="session in sessionList">
+                <p @click="chooseSession" v-bind:customerId="session.customer_id" v-bind:sessionId="session.id">
+                    {{ session.title }} '---------user_id:' {{ session.user_id }} '--------customer_id:'
+                    {{ session.customer_id }} '--------status:'
+                    {{ session.status }}
+                </p>
+            </div>
+        </div>
+        <div id="message">
+            <p v-for="message in messages">
+                {{ message }}
+            </p>
+        </div>
+        <div id="show"></div>
+        <input type="file" id="pic" style="display: none">
+        <button @click="pressMe">Click</button>
+        <div class="main">
+            <textarea id="conent"></textarea>
+            <button id="sendMessage" @click="sendMessage">发送消息</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let app = new Vue({
+        el: '#app',
+        data: {
+            messages: [],
+            websocket: null,
+            sessionList: [],
+            receiverId: 0,
+            userId: 0,
+            fd: 0,
+            sessionId: 0,
+        },
+
+        before(...nodes) {
+            this.messages = [];
+        },
+
+        mounted() {
+            this.messages = [];
+            let wsServer = 'ws://127.0.0.1:9502?type=1&userId=1';
+            let websocket = new WebSocket(wsServer);
+            this.websocket = websocket;
+            websocket.onopen = function (evt) {
+                console.log("Connected to WebSocket server.");
+            };
+
+            websocket.onclose = function (evt) {
+                console.log("Disconnected");
+            };
+            this.asyncFunc(websocket, this.messages);
+            websocket.onerror = function (evt, e) {
+                console.log('Error occured: ' + evt.data);
+            };
+
+            setInterval(this.getSessionList, 3000);
+        },
+        created() {
+        },
+        methods: {
+            async asyncFunc(websocket, messages) {
+                let res = await this.print2(this.websocket, messages);
+                console.log('res start===================')
+                console.log(res);
+                this.userId = res.userId;
+                this.fd = res.fd;
+                this.sessionId = res.sessionId
+                console.log('res end===================')
+                if (res.data.length > 20) {
+                    console.log(res.data);
+                }
+            },
+            print2(websocket, messages) {
+                return new Promise(function (resolve, reject) {
+                    websocket.onmessage = function (evt) {
+                        let type;
+                        let userId;
+                        let fd;
+                        let sessionId;
+
+                        let data = evt.data;
+                        let arr = data.split('|');
+                        console.log('print2 ============== start')
+                        console.log(arr);
+                        console.log('print2 ============== end')
+                        if (arr.length > 1) {
+                            type = arr[0];
+                            userId = arr[2]
+                            fd = arr[1];
+                            sessionId = arr[3];
+                            console.log('arr start');
+                            console.log(arr);
+                            console.log(userId, fd);
+                            console.log('arr end');
+                        } else {
+                            userId = 0;
+                            fd = 0;
+                            sessionId = 0;
+                        }
+
+                        // let message = evt.data;
+                        // messages.push(message);
+
+
+                        let date = new Date();
+                        let year = date.getFullYear();
+                        let month = date.getMonth() + 1;
+                        let day = date.getDate();
+                        console.log(year, month, day);
+
+                        let myArr = new Array(year, month, day);
+                        let dateText = myArr.join('');
+                        console.log(dateText);
+                        for (let i = 0; i < messages.length; i++) {
+                            console.log('messages.forEach ===================== start')
+                            let item = messages[i];
+                            if (item.date == dateText) {
+                                item.messages.push(evt.data);
+                                console.log(item);
+                                messages[i] = item;
+                            }
+                        }
+
+                        // 接收文件 start
+                        var reader = new FileReader();
+                        //设置FileReader对象的读取文件回调方法
+                        reader.οnlοad = function (eve) {
+                            console.log('reader.οnlοad = function (eve)  ===== start');
+                            console.log(eve);
+                            console.log('reader.οnlοad = function (eve)  ===== end');
+                            //判断文件是否读取完成
+                            if (eve.target.readyState == FileReader.DONE) {
+//读取文件完成后，创建img标签来显示服务端传来的字节数//组
+                                var img = document.createElement("img");
+
+                                //读取文件完成后内容放在this===当前
+
+//fileReader对象的result属性中，将该内容赋值img标签//浏览器就可以自动解析内容格式并且渲染在浏览器中
+
+                                img.src = this.result;
+
+                                //将标签添加到id为show的div中否则，即便是有img也看不见
+
+                                document.getElementById("show").appendChild(img);
+                            }
+
+                        };
+
+                        //调用FileReader的readAsDataURL的方法自动就会触发onload事件
+                        let value = evt.data.split('|');
+                        let fileData = value[value.length - 2];
+                        console.log('================fileData start');
+                        console.log(fileData)
+                        console.log('================fileData end');
+                        // reader.readAsDataURL(fileData);
+                        // var blob = new Blob([fileData], {
+                        //     type: 'text/plain'
+                        // });
+                        //
+                        // reader.readAsDataURL(blob);
+                        // if (typeof fileData == Object) {
+                        //     reader.readAsDataURL(fileData);
+                        // }
+                        // 接收文件 end
+                        if (fileData.length > 10) {
+                            app.downloadFileByBase64(fileData, 'ggh.png');
+                        }
+
+                        document.getElementById("conent").value = "";
+                        let ids = {
+                            userId: userId,
+                            fd: fd,
+                            sessionId: sessionId,
+                            data: fileData
+                        };
+                        resolve(ids);
+                    }
+                });
+            },
+            sendMessage() {
+                console.log(this.userId, this.fd);
+
+                let content = document.getElementById('conent').value;
+                if (content == '') {
+                    alert('请输入聊天内容');
+                    return;
+                }
+                let username = 'user_' + Math.random();
+                //|作为数据包分割线
+                let websocket = this.websocket;
+                let receiverId = this.receiverId;
+                let userId = this.userId;
+                let sessionId = this.sessionId;
+                let type = 1;
+                // let text = type + '|';
+                // text += userId + '|';
+                // text += this.fd + '|';
+                // text += sessionId + '|';
+                // text += receiverId + '|' + username + '|' + content;
+
+                let textInfo = type + '|';
+                textInfo += userId + '|';
+                textInfo += this.fd + '|';
+                textInfo += sessionId + '|';
+                textInfo += receiverId + '|' + username + '|';
+                let text = textInfo + content;
+
+
+                console.log('============ send start')
+                console.log(text);
+                console.log('============ send end')
+                let fileType = 1;           // 文字
+                text += '|' + fileType;
+                websocket.send(text);
+
+
+                let ws = websocket;
+                // 发送文件
+                var inputElement = document.getElementById("pic");
+                var fileList = inputElement.files;
+                for (var i = 0; i < fileList.length; i++) {
+                    console.log(fileList[i]);
+                    console.log(fileList[i].name);
+                    //发送文件名
+                    let fileType = 2;           // 文件名
+                    let text = textInfo + fileList[i].name;
+                    text += '|' + fileType;
+                    ws.send(text);
+
+                    var reader = new FileReader();
+                    reader.readAsDataURL(fileList[i]);
+                    reader.onload = function (e) {
+                        let fileType = 3;           // 图片
+                        let data = textInfo + e.target.result + '|' + fileType;
+                        console.log(' e.target.result ====================== start');
+                        console.log(e.target.result);
+                        console.log(' e.target.result ====================== end');
+                        ws.send(data);
+                    }
+                }
+            },
+
+            getSessionList() {
+                let api = 'http://kf.api-cg.com/api/session/list';
+                this.$http.get((api), {params: {}}).then(response => {
+                    var jobs = response.body.data;
+                    // console.log('==========getJobListApi start');
+                    // console.log(jobs);
+                    // console.log('==========getJobListApi end');
+                    this.sessionList = jobs;
+                }, response => {
+                    // console.log(response)
+                    // alert("出问题啦")
+                }).finally(
+                    response => {
+                        // alert('over')
+                        // this.reload()
+                    },
+                );
+
+                //
+                //
+                // $.get(api, function (data, status) {
+                //     // console.log('==========getJobListApi start');
+                //     // console.log(data);
+                //     // console.log('==========getJobListApi end');
+                //     let sessionList = data.data;
+                //     sessionList.forEach(function (v) {
+                //
+                //
+                //         // console.log(v);
+                //         let title = v.title;
+                //         let user_id = v.user_id;
+                //         let customer_id = v.customer_id;
+                //         let status = v.status;
+                //         let html = '<p>';
+                //         html += title + '---------user_id:' + user_id + '--------customer_id:' + customer_id + '--------status:' + status;
+                //         html += '<input id="receiverId" value="' + customer_id + '" onclick="choseSession"/>';
+                //         html += '</p>';
+                //         $("#session").append(html);
+                //     });
+                // });
+            },
+
+            chooseSession(e) {
+                let target = e.target;
+                let customerId = target.getAttribute('customerId');
+                let sessionId = target.getAttribute('sessionId');
+                alert(customerId);
+                this.receiverId = customerId;
+                this.sessionId = sessionId;
+            },
+
+            dataURLtoBlob(dataurl) {
+                try{
+                    var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+                        bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+                    while (n--) {
+                        u8arr[n] = bstr.charCodeAt(n);
+                    }
+                    return new Blob([u8arr], {type: mime});
+                }catch (e) {
+                    // do nothing
+                    return '';
+                }
+            },
+
+            downloadFile(url, name = 'What\'s the fuvk') {
+                var a = document.createElement("a")
+                a.setAttribute("href", url)
+                a.setAttribute("download", name)
+                a.setAttribute("target", "_blank")
+                let clickEvent = document.createEvent("MouseEvents");
+                clickEvent.initEvent("click", true, true);
+                a.dispatchEvent(clickEvent);
+            },
+
+            downloadFileByBase64(base64, name) {
+                var myBlob = this.dataURLtoBlob(base64)
+                console.log(myBlob);
+                if(myBlob != ''){
+                    var myUrl = URL.createObjectURL(myBlob)
+                    this.downloadFile(myUrl, name)
+                }
+            },
+
+            pressMe() {
+                document.getElementById('pic').click();
+            },
+        },
+    })
+</script>
+</body>
+</html>
