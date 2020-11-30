@@ -6319,7 +6319,6 @@
                         let message = {content: fileData, fileType: fileType};
                         item.push({message: message, sender: this.userId});
                         messages[i].messages = item;
-
                     }
                 }
 
@@ -6678,9 +6677,8 @@
                             }
                         }
                         if (!isExist) {
-                            // todo 获取session的值
-                            let session = {};
-                            app.setSessionTitle.unshift(session);
+                            // todo 获取session的值。看不懂这个前些天写的注释了。
+                            app.getSession(sessionId);
                         }
                     }
 
@@ -6939,27 +6937,22 @@
 
                 let websocket = app.websocket;
                 let type;
-                let userId;
-                let fd;
-                let sessionId;
+                let userId = 0;
+                let fd = 0;
+                let sessionId = 0;
 
                 let data = evt.data;
                 let arr = data.split('|');
                 console.log('print2 ============== start')
                 console.log(arr);
                 console.log('print2 ============== end')
-                if (arr.length > 1) {
-                    type = arr[0];
+                type = arr[0]
+                if (type == -1) {
                     userId = arr[2]
                     fd = arr[1];
                     sessionId = arr[3];
-                } else {
-                    type = 0;
-                    userId = 0;
-                    fd = 0;
-                    sessionId = 0;
+                    return;
                 }
-
                 if (type == 88) {
                     alert('该账户已经在其他地方登录，你即将退出');
                     websocket.close();
@@ -7017,8 +7010,7 @@
                     }
                     if (!isExist) {
                         // todo 获取session的值
-                        let session = {};
-                        app.setSessionTitle.unshift(session);
+                        app.getSession(sessionId);
                     }
                 }
 
@@ -7053,6 +7045,22 @@
                 }
 
                 app.getSessionList();
+            },
+
+            getSession(sessionId) {
+                let api = common.api.sessionDetail;
+                this.$http.get((api), {params: {session_id: sessionId}}).then(response => {
+                    let session = response.body.data;
+                    app.sessionList.unshift(session);
+                }, response => {
+                    // console.log(response)
+                    // alert("出问题啦")
+                }).finally(
+                    response => {
+                        // alert('over')
+                        // this.reload()
+                    },
+                );
             },
         },
 

@@ -173,7 +173,7 @@
         </span>
         <!-- 模拟textarea End-->
         <!--        <input type="text"/>-->
-        <button @click="song" id="send-btn">发送</button>
+        <button @click="send" id="send-btn">发送</button>
     </div>
 </div>
 <script src="js/chat.js?t=2" type="text/javascript" charset="utf-8"></script>
@@ -260,6 +260,8 @@
                         this.timeoutObj = setTimeout(function () {
                             // 心跳时间内收不到消息，主动触发连接关闭，开始重连
                             app.websocket.close();
+                            alert('ws:' + app.wsServer);
+                            app.wsServer = app.wsServer;
                         }, this.timeout)
                     }
                 }
@@ -272,7 +274,6 @@
                 }
                 let resStr = this.getcookie('resString');
                 let resObj;
-                alert(resStr);
                 if (resStr == undefined) {
                     resObj = {
                         userId: userId,
@@ -291,9 +292,13 @@
                 wsServer += '&sessionId=' + resObj.sessionId;
                 wsServer += '&customerId=' + resObj.customerId;
                 wsServer += '&ip=' + ip;
-                alert(wsServer);
                 this.wsServer = wsServer;
                 this.initEventHandle(wsServer)
+                let isFirst = this.getcookie('isFirst');
+                if(isFirst != 1){
+                    alert('reload')
+                    window.location = location.href;
+                }
                 //ws 断线重连代码 end
             },
 
@@ -356,7 +361,7 @@
                 // alert(resString);
                 document.cookie = 'resString=' + resString;
             },
-            song() {
+            send() {
                 console.log('start:', this.userId, this.fd);
                 let websocket = this.websocket;
                 let content = document.getElementById('text-box').innerHTML;
@@ -587,10 +592,9 @@
 
             // todo 无用，后面去掉。
             getMessageList2(sessionId) {
-                alert('s:' + sessionId);
                 // todo 传递sessionId
                 let api = common.api.messageList;
-                this.$http.get((api), {params: {session_id:sessionId}}).then(response => {
+                this.$http.get((api), {params: {session_id: sessionId}}).then(response => {
                     var jobs = response.body.data;
                     console.log('==========getMessageList start');
                     this.messages = jobs;
@@ -636,152 +640,35 @@
                 this.messages = [];
                 // this.asyncFunc(ws, this.messages);
                 ws.onclose = function (e) {
+                    alert('ws:' + app.wsServer);
+                    app.wsServer = app.wsServer;
                     app.wsOnclose(e);
                 };
                 ws.onerror = function (err) {
-                    alert('onerror restart');
                     app.reconnect();
                 };
                 ws.onopen = function () {
                     app.heartCheck.reset().start();      //心跳检测重置
                 };
                 ws.onmessage = function (evt) {    //如果获取到消息，心跳检测重置
-
                     app.wsOnmessage(evt);
-                    return;
-
-
-                    app.heartCheck.reset().start();      //拿到任何消息都说明当前连接是正常的
-
-                    let type;
-                    let userId;
-                    let fd;
-                    let sessionId;
-                    let customerId;
-                    // $msg = '-1|' . $requestId . '|' . $userId . '|' . $sessionId . '|' . $customerId;
-                    // 1|undefined|1|287|289|user_0.23784549624046902|sdfsdf
-
-                    let data = evt.data;
-                    // alert(data);
-                    let arr = data.split('|');
-                    console.log('print2 ============== start')
-                    console.log(arr);
-                    console.log('print2 ============== end')
-                    if (arr.length > 1) {
-                        // if (userId == 0 && fd == 0) {        // 暂时不确定作用
-                        type = arr[0];
-                        userId = arr[2];
-                        // alert('userId:' + userId);
-                        fd = arr[1];
-                        // alert('fd:' + fd);
-                        sessionId = arr[3];
-                        customerId = arr[4];
-                        console.log('arr start');
-                        console.log(arr);
-                        console.log(userId, fd);
-                        console.log('arr end');
-                        // }
-
-                    } else {
-                        userId = 0;
-                        fd = 0;
-                        sessionId = 0;
-                        customerId = 0;
-                    }
-
-                    if (type == -1) {
-                        // 存储到ccokie中
-                        let res = {
-                            userId: userId,
-                            fd: fd,
-                            sessionId: sessionId,
-                            customerId: customerId,
-                        };
-                        // this.userId = userId;
-                        // this.fd = fd;
-                        // this.sessionId = sessionId;
-                        // this.customerId = customerId;
-                        let resString = JSON.stringify(res); // 转字符串.
-                        // alert(resString);
-                        document.cookie = 'resString=' + resString;
-                    }
-
-                    if (app.fd == 0 && app.sessionId == 0) {
-                        app.userId = userId;
-                        app.fd = fd;
-                        app.sessionId = sessionId;
-                        app.customerId = customerId;
-                        console.log('res end===================')
-                        app.getMessageList(sessionId);
-                        app.getServiceInfo(userId);
-                    }
-
-
-                    if (app.userId == 0 && (customerId == 0 || customerId == undefined)) {
-                        ws.close();
-                        document.cookie = 'resString=' + '';
-                        alert('连接失败，请重新打开客服列表选择客服！');
-                        // window.location = location.href;
-                        window.close();
-                    }
-
-                    //
-                    // app.customerId = customerId;
-                    // app.sessionId = sessionId;
-                    // app.userId = userId;
-
-
-                    let date = new Date();
-                    let year = date.getFullYear();
-                    let month = date.getMonth() + 1;
-                    let day = date.getDate();
-                    console.log(year, month, day);
-
-                    // 时间消耗点
-                    // messages一直是空的，现在已经解决
-                    let myArr = new Array(year, month, day);
-                    let dateText = myArr.join('');
-                    console.log(dateText);
-                    let messages = app.messages;
-                    if (length == 0 || messages[0].date == undefined) {
-                        // messages.pop();
-                        let tempItem = {date: dateText, messages: []};
-                        messages.push(tempItem);
-                    }
-                    for (let i = 0; i < messages.length; i++) {
-                        let mmsgItem = messages[i];
-                        console.log('d:' + mmsgItem.date);
-                        console.log('dt:' + dateText);
-                        if (mmsgItem.date == dateText) {
-                            let item = messages[i].messages;
-                            let value = evt.data.split('|');
-                            let valueLength = value.length;
-                            let fileData = value[valueLength - 2];
-                            let fileType = value[valueLength - 1];
-                            if (fileType == 3) {
-                                fileData = common.imagePath + fileData;
-                            }
-                            let message = {content: fileData, fileType: fileType,};
-                            // 不需要想，游客收到的信息，一定是客服发的。
-                            item.push({message: message, sender: app.user.userId});
-                            console.log('messages.forEach ===================== start')
-                            console.log(item);
-                            console.log('messages.forEach ===================== end')
-                            messages[i].messages = item;
-                        }
-                    }
                 };
             },
             // 重连
             reconnect() {
                 setTimeout(function () {     //没连接上会一直重连，设置延迟避免请求过多
+                    app.wsServer = app.wsServer;
                     app.createWebSocket(app.wsServer);
                     let ws = app.websocket;
                     ws.onclose = function (e) {
+                        alert('ws:' + app.wsServer);
+                        app.wsServer = app.wsServer;
                         app.wsOnclose(e);
                     }
 
                     ws.onmessage = function (evt) {
+                        alert('ws:' + app.wsServer);
+                        app.wsServer = app.wsServer;
                         app.wsOnmessage(evt);
                     };
 
@@ -795,7 +682,7 @@
                 } else if ('MozWebSocket' in window) {
                     ws = new MozWebSocket(url);
                 } else {
-                    // alert("当前浏览器不支持websocket协议,建议使用现代浏览器")
+                    alert("当前浏览器不支持websocket协议,建议使用现代浏览器")
                 }
                 this.websocket = ws;
                 ws.onerror = function (e) {
@@ -805,7 +692,6 @@
             // end
 
             getMessageList(sessionId) {
-                alert('s:' + sessionId);
                 // todo 传递sessionId
                 let api = common.api.messageList;
                 this.$http.get((api), {params: {session_id: sessionId}}).then(response => {
@@ -816,7 +702,6 @@
                     console.log('==========getMessageList end');
                     let messages = this.messages;
                     for (let i = 0; i < messages.length; i++) {
-
                         let item = messages[i].messages;
                         for (let j = 0; j < item.length; j++) {
                             let value = item[j].message.split('|');
@@ -874,10 +759,10 @@
                 app.heartCheck.reset().start();      //拿到任何消息都说明当前连接是正常的
 
                 let type;
-                let userId;
-                let fd;
-                let sessionId;
-                let customerId;
+                let userId = 0;
+                let fd = 0;
+                let sessionId = 0;
+                let customerId = 0;
                 // $msg = '-1|' . $requestId . '|' . $userId . '|' . $sessionId . '|' . $customerId;
                 // 1|undefined|1|287|289|user_0.23784549624046902|sdfsdf
 
@@ -887,9 +772,10 @@
                 console.log('print2 ============== start')
                 console.log(arr);
                 console.log('print2 ============== end')
-                if (arr.length > 1) {
-                    // if (userId == 0 && fd == 0) {        // 暂时不确定作用
-                    type = arr[0];
+                type = arr[0];
+
+                // 服务器发来的连接成功的信息，不做其他操作。
+                if (type == -1) {
                     userId = arr[2];
                     // alert('userId:' + userId);
                     fd = arr[1];
@@ -900,16 +786,6 @@
                     console.log(arr);
                     console.log(userId, fd);
                     console.log('arr end');
-                    // }
-
-                } else {
-                    userId = 0;
-                    fd = 0;
-                    sessionId = 0;
-                    customerId = 0;
-                }
-
-                if (type == -1) {
                     // 存储到ccokie中
                     let res = {
                         userId: userId,
@@ -917,39 +793,30 @@
                         sessionId: sessionId,
                         customerId: customerId,
                     };
-                    // this.userId = userId;
-                    // this.fd = fd;
-                    // this.sessionId = sessionId;
-                    // this.customerId = customerId;
                     let resString = JSON.stringify(res); // 转字符串.
-                    // alert(resString);
                     document.cookie = 'resString=' + resString;
-                }
+                    document.cookie = 'isFirst=1';
 
-                if (app.fd == 0 && app.sessionId == 0) {
                     app.userId = userId;
                     app.fd = fd;
                     app.sessionId = sessionId;
                     app.customerId = customerId;
-                    console.log('res end===================')
+
                     app.getMessageList(sessionId);
                     app.getServiceInfo(userId);
+
+                    return;
                 }
 
-
+                // 连接成功后，userId仍然为0，那么，应该退出
                 if (app.userId == 0 && (customerId == 0 || customerId == undefined)) {
-                    ws.close();
+                    app.websocket.close();
                     document.cookie = 'resString=' + '';
                     alert('连接失败，请重新打开客服列表选择客服！');
                     // window.location = location.href;
                     window.close();
+                    return;
                 }
-
-                //
-                // app.customerId = customerId;
-                // app.sessionId = sessionId;
-                // app.userId = userId;
-
 
                 let date = new Date();
                 let year = date.getFullYear();
@@ -963,15 +830,26 @@
                 let dateText = myArr.join('');
                 console.log(dateText);
                 let messages = app.messages;
-                if (length == 0 || messages[0].date == undefined) {
-                    // messages.pop();
-                    let tempItem = {date: dateText, messages: []};
-                    messages.push(tempItem);
+                //
+                // if (length == 0 || messages[0].date == undefined) {
+                //     // messages.pop();
+                //     let tempItem = {date: dateText, messages: []};
+                //     messages.push(tempItem);
+                // }
+                if (common.debug) {
+                    console.log('onmessage ================ start')
+                    console.log(messages);
+                    console.log('onmessage ================ end')
                 }
-                for (let i = 0; i < messages.length; i++) {
+                for (let i = 0; messages.length == 0 || i < messages.length; i++) {
+                    if (messages.length == 0) {
+                        let tempItem = {date: dateText, messages: []};
+                        messages.push(tempItem);
+                    }
                     let mmsgItem = messages[i];
                     console.log('d:' + mmsgItem.date);
                     console.log('dt:' + dateText);
+
                     if (mmsgItem.date == dateText) {
                         let item = messages[i].messages;
                         let value = evt.data.split('|');

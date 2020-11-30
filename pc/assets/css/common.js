@@ -1,8 +1,8 @@
 let _apiHost = 'http://kf.api-cg.com';
-let _siteHost = 'http://dev.cg.com';
+let _siteHost = 'http://kf.cg.com';
 let common = {
     timeout: 3 * 1000,  //  心跳检测时长
-    debug:true,
+    debug: false,
     timeoutObj: null, // 定时变量
     wsHost: 'ws://127.0.0.1:9502',
     api: {
@@ -25,15 +25,20 @@ let common = {
         // 获取客服资料
         getService: _apiHost + '/api/service',
         getIP: _apiHost + '/api/session/ip',
+        // 客服列表
+        userList: _apiHost + '/api/user/list',
+        // 会话详情
+        sessionDetail: _apiHost + '/api/session',
     },
     pageUrl: {
-        loginPage: _siteHost + '/html/ws/pc/light-skin/signin.html',
-        resetPassword: _siteHost + '/html/ws/pc/light-skin/reset-password.html',
-        chatUrl: _siteHost + '/html/ws/pc/light-skin/chat-1.html',
+        loginPage: _siteHost + '/pc/light-skin/signin.html',
+        resetPassword: _siteHost + '/pc/light-skin/reset-password.html',
+        chatUrl: _siteHost + '/pc/light-skin/chat-1.html',
+        phoneIndex: _siteHost + '/phone/index.html',
     },
-    imagePath: _siteHost + '/html/ws/',
-    staticImagePath: _siteHost + '/html/ws/pic/',
-    guestAvatar: _siteHost + '/html/ws/pc/assets/media/avatar/guest.jpeg',
+    imagePath: _siteHost + '/',
+    staticImagePath: _siteHost + '/pic/',
+    guestAvatar: _siteHost + '/pc/assets/media/avatar/guest.jpeg',
     getcookie: function (objname) {//获取指定名称的cookie的值
         let arr = document.cookie.split("; ");
         for (let i = 0; i < arr.length; i++) {
@@ -46,7 +51,7 @@ let common = {
     logout: function () {
         document.cookie = 'user=' + "";
         // 跳转到登录页面
-        let loginPage = _siteHost + '/html/ws/pc/light-skin/signin.html';
+        let loginPage = _siteHost + '/pc/light-skin/signin.html';
         alert(loginPage);
         location.href = loginPage;
     },

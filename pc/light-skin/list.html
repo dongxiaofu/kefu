@@ -12,6 +12,7 @@
         </li>
     </ul>
 </div>
+<script src="./../assets/css/common.js"></script>
 <script src="./../assets/css/vue.js"></script>
 <script src="./../assets/css/vue-resource.js"></script>
 <!--<script src="http://pv.sohu.com/cityjson?ie=utf-8"></script>-->
@@ -26,7 +27,7 @@
         },
         methods: {
             getUsers() {
-                let api = 'http://kf.api-cg.com/api/user/list';
+                let api = common.api.userList;
                 this.$http.get((api), {params: {}}).then(response => {
                     var jobs = response.body.data;
                     this.users = jobs;
@@ -43,7 +44,7 @@
             startChat(e) {
                 let target = e.target;
                 let userId = target.getAttribute('userId');
-                window.open('http://dev.cg.com/html/ws/phone/index.html?userId=' + userId);
+                window.open(common.pageUrl.phoneIndex + '?userId=' + userId);
             }
         },
         mounted() {
