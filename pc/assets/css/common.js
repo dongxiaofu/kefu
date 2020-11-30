@@ -2,6 +2,7 @@ let _apiHost = 'http://kf.api-cg.com';
 let _siteHost = 'http://dev.cg.com';
 let common = {
     timeout: 3 * 1000,  //  心跳检测时长
+    debug:true,
     timeoutObj: null, // 定时变量
     wsHost: 'ws://127.0.0.1:9502',
     api: {

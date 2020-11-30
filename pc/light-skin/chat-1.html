@@ -5908,6 +5908,9 @@
             userAvatar: '',
             token: token,
             headers: {},
+
+            wsServer: '',
+            wsServerWithoutToken: '',
         },
         http: {
             root: '/',
@@ -5956,7 +5959,10 @@
 
             let wsServer = common.wsHost + '?type=1&userId=' + userId + '&token=' + token;
             let wsServerWithoutToken = common.wsHost + '?type=1&userId=' + userId;
+            this.wsServer = wsServer;
+            this.wsServerWithoutToken = wsServerWithoutToken;
             this.initEventHandle(wsServer, wsServerWithoutToken);
+
             //ws 断线重连代码 end
 
             // 旧代码  start
@@ -6414,7 +6420,7 @@
             getMessageList(sessionId) {
                 // todo 传递sessionId
                 let api = common.api.messageList;
-                this.$http.get((api), {params: {session_id:sessionId}}).then(response => {
+                this.$http.get((api), {params: {session_id: sessionId}}).then(response => {
                     var jobs = response.body.data;
                     console.log('==========getMessageList start');
                     this.messages = jobs;
@@ -6440,7 +6446,7 @@
 
                     this.messages = messages;
 
-                    this.asyncFunc(this.websocket, this.messages);
+                    // this.asyncFunc(this.websocket, this.messages);
                 }, response => {
                     // console.log(response)
                     alert("出问题啦")
@@ -6567,18 +6573,32 @@
             // start
             // 初始化事件函数
             initEventHandle(wsUrl, wsUrlWithoutoken) {
+                if (this.websocket) {
+                    if (this.websocket.readyState == WebSocket.OPEN) {
+                        console.log('open', this.websocket.readyState);
+                        return true;
+                    }
+                }
+
                 this.createWebSocket(wsUrl);
                 let ws = this.websocket;
-                ws.onclose = function () {
-                    app.reconnect(wsUrlWithoutoken);
+                if (common.debug) {
+                    alert('ws:' + ws);
+                }
+                ws.onclose = function (e) {
+                    console.log('websocket 断开: ' + e.code + ' ' + e.reason + ' ' + e.wasClean)
+                    app.reconnect();
                 };
-                ws.onerror = function (err) {
-                    app.reconnect(wsUrlWithoutoken);
+                ws.onerror = function (e) {
+                    console.log('websocket 错误: ' + e.code + ' ' + e.reason + ' ' + e.wasClean)
+                    app.reconnect();
                 };
                 ws.onopen = function () {
                     app.heartCheck.reset().start();      //心跳检测重置
                 };
                 ws.onmessage = function (evt) {    //如果获取到消息，心跳检测重置
+                    app.heartCheck.reset().start();      //拿到任何消息都说明当前连接是正常的
+
                     let websocket = ws;
                     let type;
                     let userId;
@@ -6646,7 +6666,6 @@
                         // })
                     }
 
-                    app.heartCheck.reset().start();      //拿到任何消息都说明当前连接是正常的
 
                     // 游客开启会话时发来的
                     // 会不会重复使会话列表出现重复的会话？不能肯定，添加时去个重吧
@@ -6699,26 +6718,180 @@
                 };
             },
             // 重连
-            reconnect(url) {
+            reconnect() {
                 setTimeout(function () {     //没连接上会一直重连，设置延迟避免请求过多
-                    app.createWebSocket(url);
-                }, 2000);
+                    if (common.debug) {
+                        // alert('in reconnect:' + app.wsServerWithoutToken);
+                    }
+                    app.createWebSocket(app.wsServerWithoutToken);
+
+
+                    let ws = app.websocket;
+                    ws.onclose = function (e) {
+                        app.wsOnclose(e);
+                    }
+
+                    ws.onmessage = function (evt) {
+                        app.wsOnmessage(evt);
+                    };
+
+
+                    // ws.onmessage = function (evt) {    //如果获取到消息，心跳检测重置
+                    //     alert('start 0');
+                    //     app.heartCheck.reset().start();      //拿到任何消息都说明当前连接是正常的
+                    //     alert('start 2');
+                    //
+                    //
+                    //     let websocket = ws;
+                    //     let type;
+                    //     let userId;
+                    //     let fd;
+                    //     let sessionId;
+                    //
+                    //     let data = evt.data;
+                    //     let arr = data.split('|');
+                    //     console.log('print2 ============== start')
+                    //     console.log(arr);
+                    //     console.log('print2 ============== end')
+                    //     if (arr.length > 1) {
+                    //         type = arr[0];
+                    //         userId = arr[2]
+                    //         fd = arr[1];
+                    //         sessionId = arr[3];
+                    //     } else {
+                    //         type = 0;
+                    //         userId = 0;
+                    //         fd = 0;
+                    //         sessionId = 0;
+                    //     }
+                    //
+                    //     if (type == 88) {
+                    //         alert('该账户已经在其他地方登录，你即将退出');
+                    //         websocket.close();
+                    //         // todo 退出
+                    //         app.logout();
+                    //         return;
+                    //     }
+                    //
+                    //     // 只初始化一次。这是个耗费了很长时间才找到的漏洞。
+                    //     // 为啥花了很多时间？5|3|hello这种协议格式不直观，逻辑略多
+                    //     if (app.fd == 0 && app.sessionId == 0) {
+                    //         app.userId = userId;
+                    //         app.fd = fd;
+                    //         app.sessionId = sessionId
+                    //
+                    //         // 选择的不是模板元素，由于vue的渲染问题，先后顺序。
+                    //         // let sessionElement = document.getElementById('chatContactTab');
+                    //         // console.log('sessionElement start');
+                    //         // console.log(sessionElement);
+                    //         // console.log('sessionElement end');
+                    //         // let firstChild = sessionElement.firstElementChild;
+                    //         // console.log('firstChild start');
+                    //         // console.log(firstChild);
+                    //         // console.log('firstChild end');
+                    //         // firstChild.click();
+                    //         // 不行
+                    //         // app.$nextTick(function () {
+                    //         //     alert('===============')
+                    //         //     let sessionElement = document.getElementById('chatContactTab');
+                    //         //     console.log('sessionElement start');
+                    //         //     console.log((sessionElement.childNodes));
+                    //         //     let childNodes = sessionElement.childNodes;
+                    //         //     for(let i = 0; i < childNodes.length; i++){
+                    //         //         console.log(childNodes[i])
+                    //         //     }
+                    //         //     console.log('sessionElement end');
+                    //         //     let firstChild = sessionElement.firstElementChild;
+                    //         //     console.log('firstChild start');
+                    //         //     console.log(firstChild);
+                    //         //     console.log('firstChild end');
+                    //         //     firstChild.click();
+                    //         // })
+                    //     }
+                    //
+                    //
+                    //     // 游客开启会话时发来的
+                    //     // 会不会重复使会话列表出现重复的会话？不能肯定，添加时去个重吧
+                    //     if (type == 2) {
+                    //         let isExist = false;
+                    //         for (let i = 0; i < app.sessionList.length; i++) {
+                    //             if (sessionId == app.sessionList[i].id) {
+                    //                 isExist = true;
+                    //                 break;
+                    //             }
+                    //         }
+                    //         if (!isExist) {
+                    //             // todo 获取session的值
+                    //             let session = {};
+                    //             app.setSessionTitle.unshift(session);
+                    //         }
+                    //     }
+                    //
+                    //     let date = new Date();
+                    //     let year = date.getFullYear();
+                    //     let month = date.getMonth() + 1;
+                    //     let day = date.getDate();
+                    //     console.log(year, month, day);
+                    //
+                    //     // 时间消耗点
+                    //     // messages一直是空的，现在已经解决
+                    //     let myArr = new Array(year, month, day);
+                    //     let dateText = myArr.join('');
+                    //     console.log(dateText);
+                    //     let messages = app.messages;
+                    //     for (let i = 0; i < messages.length; i++) {
+                    //         let item = messages[i];
+                    //         if (item.date == dateText) {
+                    //             let item = messages[i].messages;
+                    //             let value = evt.data.split('|');
+                    //             let valueLength = value.length;
+                    //             let fileData = value[valueLength - 2];
+                    //             let fileType = value[valueLength - 1];
+                    //             if (fileType == 3) {
+                    //                 fileData = common.imagePath + fileData;
+                    //             }
+                    //             let message = {content: fileData, fileType: fileType,};
+                    //             // todo 要不要加上sender?
+                    //             item.push({message: message, sender: app.userId, new_message: message});
+                    //             messages[i].messages = item;
+                    //         }
+                    //     }
+                    //
+                    //     app.getSessionList();
+                    // };
+
+                    // ws.onclose = function (e) {
+                    //     alert('closed reconnect');
+                    //     console.log('websocket 断开: ' + e.code + ' ' + e.reason + ' ' + e.wasClean)
+                    //     app.reconnect();
+                    // };
+
+
+                }, 5000);
             },
             // 实例websocket
             createWebSocket(url) {
                 let ws;
-                try {
-                    if ('WebSocket' in window) {
-                        ws = new WebSocket(url);
-                    } else if ('MozWebSocket' in window) {
-                        ws = new MozWebSocket(url);
-                    } else {
-                        alert("当前浏览器不支持websocket协议,建议使用现代浏览器")
+                if ('WebSocket' in window) {
+                    ws = new WebSocket(url);
+
+                } else if ('MozWebSocket' in window) {
+                    ws = new MozWebSocket(url);
+                } else {
+                    alert("当前浏览器不支持websocket协议,建议使用现代浏览器")
+                }
+                if (common.debug) {
+                    // alert('in createWebSocket:' + ws);
+                }
+                this.websocket = ws;
+
+                // this.initEventHandle(this.wsServer, this.wsServerWithoutToken);
+
+                ws.onerror = function () {
+                    if (common.debug) {
+                        alert('in createWebSocket e');
                     }
-                    this.websocket = ws;
-                    this.initEventHandle();
-                } catch (e) {
-                    this.reconnect(url);
+                    app.reconnect();
                 }
             },
             // end
@@ -6756,7 +6929,131 @@
                 });
             },
 
+            wsOnclose(e) {
+                console.log('websocket 断开: ' + e.code + ' ' + e.reason + ' ' + e.wasClean)
+                app.reconnect();
+            },
 
+            wsOnmessage(evt) {    //如果获取到消息，心跳检测重置
+                app.heartCheck.reset().start();      //拿到任何消息都说明当前连接是正常的
+
+                let websocket = app.websocket;
+                let type;
+                let userId;
+                let fd;
+                let sessionId;
+
+                let data = evt.data;
+                let arr = data.split('|');
+                console.log('print2 ============== start')
+                console.log(arr);
+                console.log('print2 ============== end')
+                if (arr.length > 1) {
+                    type = arr[0];
+                    userId = arr[2]
+                    fd = arr[1];
+                    sessionId = arr[3];
+                } else {
+                    type = 0;
+                    userId = 0;
+                    fd = 0;
+                    sessionId = 0;
+                }
+
+                if (type == 88) {
+                    alert('该账户已经在其他地方登录，你即将退出');
+                    websocket.close();
+                    // todo 退出
+                    app.logout();
+                    return;
+                }
+
+                // 只初始化一次。这是个耗费了很长时间才找到的漏洞。
+                // 为啥花了很多时间？5|3|hello这种协议格式不直观，逻辑略多
+                if (app.fd == 0 && app.sessionId == 0) {
+                    app.userId = userId;
+                    app.fd = fd;
+                    app.sessionId = sessionId
+
+                    // 选择的不是模板元素，由于vue的渲染问题，先后顺序。
+                    // let sessionElement = document.getElementById('chatContactTab');
+                    // console.log('sessionElement start');
+                    // console.log(sessionElement);
+                    // console.log('sessionElement end');
+                    // let firstChild = sessionElement.firstElementChild;
+                    // console.log('firstChild start');
+                    // console.log(firstChild);
+                    // console.log('firstChild end');
+                    // firstChild.click();
+                    // 不行
+                    // app.$nextTick(function () {
+                    //     alert('===============')
+                    //     let sessionElement = document.getElementById('chatContactTab');
+                    //     console.log('sessionElement start');
+                    //     console.log((sessionElement.childNodes));
+                    //     let childNodes = sessionElement.childNodes;
+                    //     for(let i = 0; i < childNodes.length; i++){
+                    //         console.log(childNodes[i])
+                    //     }
+                    //     console.log('sessionElement end');
+                    //     let firstChild = sessionElement.firstElementChild;
+                    //     console.log('firstChild start');
+                    //     console.log(firstChild);
+                    //     console.log('firstChild end');
+                    //     firstChild.click();
+                    // })
+                }
+
+
+                // 游客开启会话时发来的
+                // 会不会重复使会话列表出现重复的会话？不能肯定，添加时去个重吧
+                if (type == 2) {
+                    let isExist = false;
+                    for (let i = 0; i < app.sessionList.length; i++) {
+                        if (sessionId == app.sessionList[i].id) {
+                            isExist = true;
+                            break;
+                        }
+                    }
+                    if (!isExist) {
+                        // todo 获取session的值
+                        let session = {};
+                        app.setSessionTitle.unshift(session);
+                    }
+                }
+
+                let date = new Date();
+                let year = date.getFullYear();
+                let month = date.getMonth() + 1;
+                let day = date.getDate();
+                console.log(year, month, day);
+
+                // 时间消耗点
+                // messages一直是空的，现在已经解决
+                let myArr = new Array(year, month, day);
+                let dateText = myArr.join('');
+                console.log(dateText);
+                let messages = app.messages;
+                for (let i = 0; i < messages.length; i++) {
+                    let item = messages[i];
+                    if (item.date == dateText) {
+                        let item = messages[i].messages;
+                        let value = evt.data.split('|');
+                        let valueLength = value.length;
+                        let fileData = value[valueLength - 2];
+                        let fileType = value[valueLength - 1];
+                        if (fileType == 3) {
+                            fileData = common.imagePath + fileData;
+                        }
+                        let message = {content: fileData, fileType: fileType,};
+                        // todo 要不要加上sender?
+                        item.push({message: message, sender: app.userId, new_message: message});
+                        messages[i].messages = item;
+                    }
+                }
+
+                app.getSessionList();
+            },
         },
 
     })
