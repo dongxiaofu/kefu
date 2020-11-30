@@ -276,7 +276,12 @@
                                                  v-bind:sessionTitle="session.title"
                                             >
                                         </div>
-                                        <div class="contacts-content">
+                                        <div class="contacts-content"
+                                             v-bind:customerId="session.customer_id"
+                                             v-bind:sessionId="session.id"
+                                             v-bind:sessionIndex="key"
+                                             v-bind:sessionTitle="session.title"
+                                        >
                                             <div class="contacts-info"
                                                  v-bind:customerId="session.customer_id"
                                                  v-bind:sessionId="session.id"
@@ -5849,7 +5854,7 @@
 <!-- Javascript Files -->
 <!--<script src="https://unpkg.com/vue/dist/vue.js"></script>-->
 <!--<script src="https://cdn.bootcdn.net/ajax/libs/vue-resource/1.5.1/vue-resource.js"></script>-->
-<script src="./../assets/css/common.js"></script>
+<script src="./../assets/css/common.js?t=2"></script>
 <script src="./../assets/css/vue.js"></script>
 <script src="./../assets/css/vue-resource.js"></script>
 <script src="./../assets/vendors/jquery/jquery-3.5.0.min.js"></script>
@@ -6408,6 +6413,7 @@
                     this.blockText = this.currentSession.is_block == 1 ? '屏蔽' : '取消屏蔽';
                     // 初始化消息列表。转变思路后，8分钟解决了问题。之前耗费时间30多分钟，试了几种JS语法，都不行。
                     // this.fd =
+                    alert('cid:' + currentSession.customer_id);
                     this.receiverId = currentSession.customer_id;
                     this.sessionId = this.currentSession.id;
                     this.sessionTitle = this.currentSession.title;

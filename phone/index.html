@@ -11,7 +11,7 @@
 
     <script src="js/jquery.min.js"></script>
     <script src="js/flexible.js"></script>
-    <script src="./../pc/assets/css/common.js?t=1"></script>
+    <script src="./../pc/assets/css/common.js?t=2"></script>
     <script src="js/vue.js"></script>
     <script src="js/vue-resource.js"></script>
     <style type="text/css">
@@ -294,8 +294,11 @@
                 this.wsServer = wsServer;
                 this.initEventHandle(wsServer)
                 let isFirst = this.getcookie('isFirst');
-                if(isFirst != 1){
-                    window.location = location.href;
+                if (isFirst != 1) {
+                    setTimeout(function () {
+                        window.location = location.href;
+                    },2000);
+
                 }
                 //ws 断线重连代码 end
             },
