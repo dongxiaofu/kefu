@@ -260,7 +260,6 @@
                         this.timeoutObj = setTimeout(function () {
                             // 心跳时间内收不到消息，主动触发连接关闭，开始重连
                             app.websocket.close();
-                            alert('ws:' + app.wsServer);
                             app.wsServer = app.wsServer;
                         }, this.timeout)
                     }
@@ -296,7 +295,6 @@
                 this.initEventHandle(wsServer)
                 let isFirst = this.getcookie('isFirst');
                 if(isFirst != 1){
-                    alert('reload')
                     window.location = location.href;
                 }
                 //ws 断线重连代码 end
@@ -640,8 +638,6 @@
                 this.messages = [];
                 // this.asyncFunc(ws, this.messages);
                 ws.onclose = function (e) {
-                    alert('ws:' + app.wsServer);
-                    app.wsServer = app.wsServer;
                     app.wsOnclose(e);
                 };
                 ws.onerror = function (err) {
@@ -657,18 +653,13 @@
             // 重连
             reconnect() {
                 setTimeout(function () {     //没连接上会一直重连，设置延迟避免请求过多
-                    app.wsServer = app.wsServer;
                     app.createWebSocket(app.wsServer);
                     let ws = app.websocket;
                     ws.onclose = function (e) {
-                        alert('ws:' + app.wsServer);
-                        app.wsServer = app.wsServer;
                         app.wsOnclose(e);
                     }
 
                     ws.onmessage = function (evt) {
-                        alert('ws:' + app.wsServer);
-                        app.wsServer = app.wsServer;
                         app.wsOnmessage(evt);
                     };
 
