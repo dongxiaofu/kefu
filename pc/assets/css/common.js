@@ -50,6 +50,7 @@ let common = {
     // 退出
     logout: function () {
         document.cookie = 'user=' + "";
+        document.cookie = 'isFirst=0';
         // 跳转到登录页面
         let loginPage = _siteHost + '/pc/light-skin/signin.html';
         alert(loginPage);

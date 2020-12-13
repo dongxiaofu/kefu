@@ -5949,7 +5949,7 @@
             this.heartCheck = heartCheck;
 
             let userStr = this.getcookie('user');
-            if (userStr == undefined) {
+            if (userStr == undefined || userStr == '') {
                 this.user = {};
                 let loginPage = common.pageUrl.loginPage;
                 location.href = loginPage;
