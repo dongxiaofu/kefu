@@ -126,6 +126,8 @@ body{
 	border-radius: 0.2rem;
 	max-width:5rem ;
 	box-sizing: border-box;
+	/*链接换行*/
+	word-wrap:break-word;
 }
 
 .msg_input{
