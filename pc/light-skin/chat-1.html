@@ -3191,7 +3191,7 @@
 
                                 <!-- Received Message Start -->
                                 <!--                                命名不合适，是相反的-->
-                                <div :class="userId == messageItem.sender ? 'message' : 'message self'"
+                                <div :class="user.id == messageItem.sender ? 'message' : 'message self'"
                                      v-for="messageItem in messagesOfDay.messages">
                                     <div class="message-wrapper">
                                         <div class="message-content" style="max-width: 30rem;">
@@ -5973,7 +5973,7 @@
             if (isFirst != 1) {
                 setTimeout(function () {
                     window.location = location.href;
-                },2000);
+                }, 2000);
 
             }
 
@@ -6273,7 +6273,8 @@
                 //|作为数据包分割线
                 let websocket = this.websocket;
                 let receiverId = this.receiverId;
-                let userId = this.userId;
+                // let userId = this.userId;
+                let userId = this.user.id;
                 let sessionId = this.sessionId;
                 let type = 1;
                 // let text = type + '|';
@@ -6332,7 +6333,8 @@
                         // 浪费了比较多时间，不清楚数据结构，将很难看懂、改对这里
                         let message = {content: fileData, fileType: fileType};
                         alert('push');
-                        item.push({message: message, sender: this.userId});
+                        // item.push({message: message, sender: this.userId});
+                        item.push({message: message, sender: userId});
                         messages[i].messages = item;
                     }
                 }
@@ -6383,7 +6385,7 @@
                                 let fileData = value[valueLength - 2];
                                 let fileType = 3;
                                 let message = {content: fileData, fileType: fileType,};
-                                item.push({message: message, sender: app.userId});
+                                item.push({message: message, sender: app.user.id});
                                 messages[i].messages = item;
                             }
                         }
@@ -6484,6 +6486,12 @@
                 this.receiverId = customerId;
                 this.sessionId = sessionId;
                 this.sessionTitle = sessionTitle;
+
+                if (common.debug) {
+                    console.log('===================== session list start===========')
+                    console.log(this.sessionList)
+                    console.log('===================== session list end===========')
+                }
 
                 this.oldSessionRemark = document.getElementById('sessionRemark').innerHTML;
 
@@ -6848,12 +6856,11 @@
                 console.log(arr);
                 console.log('print2 ============== end')
                 type = arr[0]
+                userId = arr[2]
+                fd = arr[1];
+                sessionId = arr[3];
                 if (type == -1) {
-                    userId = arr[2]
-                    fd = arr[1];
-                    sessionId = arr[3];
                     document.cookie = 'isFirst=1';
-
                     app.getSessionList();
 
                     return;
@@ -6872,7 +6879,6 @@
                     app.userId = userId;
                     app.fd = fd;
                     app.sessionId = sessionId
-
 
 
                     // 选择的不是模板元素，由于vue的渲染问题，先后顺序。
@@ -6904,15 +6910,12 @@
                     // })
                 }
 
-
-
-
                 // 游客开启会话时发来的
                 // 会不会重复使会话列表出现重复的会话？不能肯定，添加时去个重吧
                 if (type == 2) {
                     let isExist = false;
                     for (let i = 0; i < app.sessionList.length; i++) {
-                        if(app.sessionList[i] == undefined){
+                        if (app.sessionList[i] == undefined) {
                             continue;
                         }
                         if (sessionId == app.sessionList[i].id) {
@@ -6921,9 +6924,9 @@
                         }
                     }
                     if (!isExist) {
-                        // todo 获取session的值
                         app.getSession(sessionId);
                     }
+                    return;
                 }
 
                 let date = new Date();
@@ -6937,22 +6940,41 @@
                 let myArr = new Array(year, month, day);
                 let dateText = myArr.join('');
                 console.log(dateText);
-                let messages = app.messages;
-                for (let i = 0; i < messages.length; i++) {
-                    let item = messages[i];
-                    if (item.date == dateText) {
-                        let item = messages[i].messages;
-                        let value = evt.data.split('|');
-                        let valueLength = value.length;
-                        let fileData = value[valueLength - 2];
-                        let fileType = value[valueLength - 1];
-                        if (fileType == 3) {
-                            fileData = common.imagePath + fileData;
+
+                // 收到消息后，若是当前会话，需将消息加入消息列表；若不是当前会话，只需将消息加入会话列表的消息栏。
+                let value = evt.data.split('|');
+                let valueLength = value.length;
+                let msgSessionId = value[valueLength - 3];
+                let fileData = value[valueLength - 2];
+                let fileType = value[valueLength - 1];
+
+                if (fileType == 3) {
+                    fileData = common.imagePath + fileData;
+                }
+
+                // 异步获取数据，很烦，很不爽这种方式。
+                for (let i = 0; i < app.sessionList.length; i++) {
+                    if (app.sessionList[i].id == msgSessionId) {
+
+                        app.sessionList[i].new_message = fileData;
+                        break;
+                    }
+                }
+                // 加入会话列表的消息栏
+                // 将消息加入消息列表
+                if (msgSessionId == app.currentSession.id) {
+                    let messages = app.messages;
+                    for (let i = 0; i < messages.length; i++) {
+                        let item = messages[i];
+                        if (item.date == dateText) {
+                            let item = messages[i].messages;
+                            let message = {content: fileData, fileType: fileType,};
+                            // todo 要不要加上sender?
+                            // item.push({message: message, sender: app.userId, new_message: message});
+                            // 只需新收到的消息的sender不与当前客服的ID相同就行。
+                            item.push({message: message, sender: 0, new_message: message});
+                            messages[i].messages = item;
                         }
-                        let message = {content: fileData, fileType: fileType,};
-                        // todo 要不要加上sender?
-                        item.push({message: message, sender: app.userId, new_message: message});
-                        messages[i].messages = item;
                     }
                 }
             },
