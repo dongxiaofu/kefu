@@ -291,13 +291,15 @@
                 wsServer += '&sessionId=' + resObj.sessionId;
                 wsServer += '&customerId=' + resObj.customerId;
                 wsServer += '&ip=' + ip;
+                let webHost = encodeURI(window.location.host);
+                wsServer += '&url=' + webHost;
                 this.wsServer = wsServer;
                 this.initEventHandle(wsServer)
                 let isFirst = this.getcookie('isFirst');
                 if (isFirst != 1) {
                     setTimeout(function () {
                         window.location = location.href;
-                    },2000);
+                    }, 2000);
 
                 }
                 //ws 断线重连代码 end
