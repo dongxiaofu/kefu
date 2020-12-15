@@ -46,6 +46,19 @@
 <div id="app">
     <!-- Main Layout Start -->
     <div class="main-layout">
+        <div id="warn-audio" style="display: none;">
+            <audio
+                    ref="audio"
+                    preload="auto"
+                    autoplay
+                    src="/pc/assets/warning.mp3"
+                    controls="controls"
+                    hidden
+                    loadedmetadata="onLoadedmetadata"
+            />
+            </section>
+            <button id="playBtn" @click="startPlay">播放</button>
+        </div>
         <!-- Navigation Start -->
         <div class="navigation navbar navbar-light bg-primary" style="display: none;">
             <!-- Logo Start -->
@@ -6079,20 +6092,25 @@
                 console.log(app.headers);
                 console.log('app.headers e=================');
                 this.$http.post((api), data, {emulateJSON: true}).then(response => {
-                    let result = response.body;
-                    console.log('---------clearSession start------');
-                    console.log(result);
-                    console.log('---------clearSession end------');
-                    this.getSessionList();
-                    flag = true;
+                    if (response.body.code == 0) {
+                        let result = response.body;
+                        console.log('---------clearSession start------');
+                        console.log(result);
+                        console.log('---------clearSession end------');
+                        this.getSessionList();
+                        flag = true;
+                    }
                 }, response => {
                     console.log(response);
                     alert('出问题啦');
                     flag = false;
                 }).finally(response => {
                     if (flag == true) {
+                        // alert(flag)
                         app.messages = [];
-                        app.currentSession = {};
+                        // app.currentSession = {};
+                        // 重载页面
+                        window.location = location.href;
                     }
                 });
             },
@@ -6940,6 +6958,8 @@
                     // })
                 }
 
+                app.playAudio();
+
                 // 游客开启会话时发来的
                 // 会不会重复使会话列表出现重复的会话？不能肯定，添加时去个重吧
                 if (type == 2) {
@@ -7037,7 +7057,6 @@
                     if (response.body.code == 0 || response.body.data != null) {
                         let session = response.body.data;
                         app.sessionList.unshift(session);
-
                     }
                 }, response => {
                     // console.log(response)
@@ -7048,6 +7067,15 @@
                         // this.reload()
                     },
                 );
+            },
+
+            playAudio() {
+                document.getElementById('playBtn').click();
+            },
+            startPlay() {
+                // alert(4444)
+                this.$refs.audio.currentTime = 0 // 从头开始播放提示音
+                this.$refs.audio.play()
             },
         },
 
