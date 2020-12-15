@@ -83,7 +83,7 @@
     <div class="message">
         <div v-for="messagesOfDay in messages">
             <div class="time">{{ messagesOfDay.date }}</div>
-            <div :class="messageItem.sender == customerId ? 'send' : 'send self'"
+            <div :class="messageItem.sender == customerId ? 'send self' : 'send'"
                  v-for="messageItem in messagesOfDay.messages">
                 <div class="msg">
                     <img :src="messageItem.sender == customerId ? guestAvatar : user.avatar" alt=""/>

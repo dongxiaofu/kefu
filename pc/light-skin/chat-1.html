@@ -3191,7 +3191,7 @@
 
                                 <!-- Received Message Start -->
                                 <!--                                命名不合适，是相反的-->
-                                <div :class="user.id == messageItem.sender ? 'message' : 'message self'"
+                                <div :class="user.id == messageItem.sender ? 'message  self' : 'message'"
                                      v-for="messageItem in messagesOfDay.messages">
                                     <div class="message-wrapper">
                                         <div class="message-content" style="max-width: 30rem;">
@@ -5854,7 +5854,7 @@
 <!-- Javascript Files -->
 <!--<script src="https://unpkg.com/vue/dist/vue.js"></script>-->
 <!--<script src="https://cdn.bootcdn.net/ajax/libs/vue-resource/1.5.1/vue-resource.js"></script>-->
-<script src="./../assets/css/common.js?t=2"></script>
+<script src="./../assets/css/common.js?t=4"></script>
 <script src="./../assets/css/vue.js"></script>
 <script src="./../assets/css/vue-resource.js"></script>
 <script src="./../assets/vendors/jquery/jquery-3.5.0.min.js"></script>
@@ -6618,6 +6618,9 @@
                     app.heartCheck.reset().start();      //心跳检测重置
                 };
                 ws.onmessage = function (evt) {    //如果获取到消息，心跳检测重置
+                    if (common.debug) {
+                        // alert(22222);
+                    }
                     app.wsOnmessage(evt);
                 }
             },
@@ -6828,9 +6831,10 @@
                 }).finally(response => {
                     document.cookie = 'user=' + "";
                     document.cookie = 'isFirst=0';
-                    // 跳转到登录页面
-                    let loginPage = common.pageUrl.loginPage;
-                    location.href = loginPage;
+                    common.logout();
+                    // // 跳转到登录页面
+                    // let loginPage = common.pageUrl.loginPage;
+                    // location.href = loginPage;
                 });
             },
 
@@ -6857,6 +6861,11 @@
                 userId = arr[2]
                 fd = arr[1];
                 sessionId = arr[3];
+
+                if (common.debug) {
+                    // alert('type:' + type);
+                }
+
                 if (type == -1) {
                     document.cookie = 'isFirst=1';
                     app.getSessionList();
@@ -6911,6 +6920,25 @@
                 // 游客开启会话时发来的
                 // 会不会重复使会话列表出现重复的会话？不能肯定，添加时去个重吧
                 if (type == 2) {
+                    // 不知什么原因，新客户连接客服时，会收到两次消息，去重
+                    let sessionIdsStr = localStorage.getItem('sessionIds');
+                    let sessionIds = [];
+                    if (sessionIdsStr != undefined && sessionIdsStr != '' && sessionIdsStr != null) {
+                        sessionIds = JSON.parse(sessionIdsStr);
+                    }
+                    for (let i = 0; i < sessionIds.length; i++) {
+                        if (sessionIds[i] == sessionId) {
+                            return;
+                        }
+                    }
+                    sessionIds.push(sessionId);
+                    sessionIdsStr = JSON.stringify(sessionIds);
+                    localStorage.setItem('sessionIds', sessionIdsStr);
+
+                    console.log('============================sessionIds start');
+                    console.log('sessionIdsStr:' + sessionIdsStr);
+                    console.log('============================sessionIds end');
+
                     let isExist = false;
                     for (let i = 0; i < app.sessionList.length; i++) {
                         if (app.sessionList[i] == undefined) {
@@ -6922,6 +6950,9 @@
                         }
                     }
                     if (!isExist) {
+                        if (common.debug) {
+                            alert('token:' + token);
+                        }
                         app.getSession(sessionId);
                     }
                     return;
@@ -6953,7 +6984,7 @@
                 // 异步获取数据，很烦，很不爽这种方式。
                 for (let i = 0; i < app.sessionList.length; i++) {
                     if (app.sessionList[i].id == msgSessionId) {
-
+                        // alert('get');
                         app.sessionList[i].new_message = fileData;
                         break;
                     }
@@ -6980,8 +7011,11 @@
             getSession(sessionId) {
                 let api = common.api.sessionDetail;
                 this.$http.get((api), {params: {session_id: sessionId}}).then(response => {
-                    let session = response.body.data;
-                    app.sessionList.unshift(session);
+                    if (response.body.code == 0 || response.body.data != null) {
+                        let session = response.body.data;
+                        app.sessionList.unshift(session);
+
+                    }
                 }, response => {
                     // console.log(response)
                     // alert("出问题啦")
