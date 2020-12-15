@@ -354,9 +354,7 @@
                     console.log('登录成功 end');
                     if (result.code == 0) {
                         let user = result.data.user;
-                        alert(user);
                         let userStr = JSON.stringify(user); // 转字符串.
-                        alert(userStr);
                         document.cookie = 'user=' + userStr;
                         location.href = chatUrl;
                     } else {

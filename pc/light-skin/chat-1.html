@@ -5969,7 +5969,6 @@
             this.initEventHandle(wsServer, wsServerWithoutToken);
 
             let isFirst = this.getcookie('isFirst');
-            alert(isFirst);
             if (isFirst != 1) {
                 setTimeout(function () {
                     window.location = location.href;
@@ -6332,7 +6331,6 @@
                         }
                         // 浪费了比较多时间，不清楚数据结构，将很难看懂、改对这里
                         let message = {content: fileData, fileType: fileType};
-                        alert('push');
                         // item.push({message: message, sender: this.userId});
                         item.push({message: message, sender: userId});
                         messages[i].messages = item;
