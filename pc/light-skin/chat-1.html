@@ -5919,7 +5919,7 @@
 
             wsServer: '',
             wsServerWithoutToken: '',
-            hasImage:false,
+            hasImage: false,
         },
         http: {
             root: '/',
@@ -6073,6 +6073,7 @@
                     time_type: this.timeType.value,
                     session_id: this.sessionId
                 };
+                let flag = false;
 
                 console.log('app.headers s=================');
                 console.log(app.headers);
@@ -6083,10 +6084,16 @@
                     console.log(result);
                     console.log('---------clearSession end------');
                     this.getSessionList();
+                    flag = true;
                 }, response => {
                     console.log(response);
                     alert('出问题啦');
+                    flag = false;
                 }).finally(response => {
+                    if (flag == true) {
+                        app.messages = [];
+                        app.currentSession = {};
+                    }
                 });
             },
             setSessionTitle(e) {
