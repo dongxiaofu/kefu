@@ -228,6 +228,8 @@
 
                                         <!-- Dropdown Menu Start -->
                                         <div class="dropdown-menu">
+                                            <a class="dropdown-item" href="#" v-bind:timeType="-1"
+                                               @click="choseTimeType($event)">当前</a>
                                             <a class="dropdown-item" href="#" v-bind:timeType="5"
                                                @click="choseTimeType($event)">5天</a>
                                             <a class="dropdown-item" href="#" v-bind:timeType="7"
@@ -3669,6 +3671,7 @@
                                             <div class="dropdown">
                                                 <button class="btn btn-secondary btn-icon btn-minimal btn-sm text-muted text-muted"
                                                         type="button" data-toggle="dropdown" aria-haspopup="true"
+                                                        @click="upload"
                                                         aria-expanded="false">
                                                     <!-- Default :: Inline SVG -->
                                                     <svg class="hw-20" fill="none" viewBox="0 0 24 24"
@@ -3681,7 +3684,7 @@
                                                     <!-- Alternate :: External File link -->
                                                     <!-- <img class="injectable hw-20" src="./../assets/media/heroicons/outline/plus-circle.svg" alt=""> -->
                                                 </button>
-                                                <div class="dropdown-menu">
+                                                <div class="dropdown-menu" style="display: none;">
                                                     <input type="file" name="files" id="upload-item">
                                                     <a class="dropdown-item" href="#">
                                                         <!-- Default :: Inline SVG -->
@@ -5916,6 +5919,7 @@
 
             wsServer: '',
             wsServerWithoutToken: '',
+            hasImage:false,
         },
         http: {
             root: '/',
@@ -6257,10 +6261,22 @@
                 console.log(content)
                 console.log('sendMessage end=====================')
 
-                if (content == '') {
-                    alert('请输入聊天内容');
-                    return;
+                var inputElement = document.getElementById("upload-item");
+                var fileList = inputElement.files;
+                if (fileList.length > 0) {
+                    this.hasImage = true;
                 }
+                if (content == '') {
+                    if (!this.hasImage) {
+                        alert('请输入聊天内容');
+                        return;
+                    }
+                }
+
+                // if (content == '') {
+                //     alert('请输入聊天内容');
+                //     return;
+                // }
 
                 if (this.currentSession.is_block == 0) {
                     alert('当前用户已经被屏蔽，不能发送消息');
