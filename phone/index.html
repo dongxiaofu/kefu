@@ -166,7 +166,7 @@
             </ul>
         </div>
         <img src="images/hua.png" alt="" @click="upload"/>
-        <input type="file" name="files" id="upload-item" @change="uploadImg">
+        <input type="file" name="files" id="upload-item" @change="uploadImg" accept="image/*">
         <img src="images/xiaolian.png" alt="" @click="switchEmojiBox"/>
         <!-- 模拟textarea Start-->
         <span id="text-box" contenteditable="true">
@@ -864,7 +864,6 @@
                                 messages[i].messages = item;
                             }
                         }
-
 
 
                         console.log('=============let messages = app.messages start')

@@ -330,7 +330,7 @@
                                                    v-bind:sessionId="session.id"
                                                    v-bind:sessionIndex="key"
                                                    v-bind:sessionTitle="session.title"
-                                                >{{ session.new_message }} </p>
+                                                >{{ session.new_message }}</p>
                                             </div>
                                         </div>
                                     </span>
@@ -3699,7 +3699,7 @@
                                                 </button>
                                                 <div class="dropdown-menu" style="display: none;">
                                                     <input type="file" name="files" id="upload-item"
-                                                           @change="uploadImg">
+                                                           @change="uploadImg"  accept="image/*">>
                                                     <a class="dropdown-item" href="#">
                                                         <!-- Default :: Inline SVG -->
                                                         <svg class="hw-20 mr-2" fill="none" viewBox="0 0 24 24"
@@ -7003,7 +7003,9 @@
                         // app.playAudio();
                         app.getSessionList();
                     }
+                    alert("type start:" + type);
                     return;
+                    alert("type end:" + type);
                 }
 
                 app.playAudio();
@@ -7034,6 +7036,7 @@
                 // 异步获取数据，很烦，很不爽这种方式。
                 for (let i = 0; i < app.sessionList.length; i++) {
                     if (app.sessionList[i].id == msgSessionId) {
+                        // alert("type start 2:" + type);
                         // alert('get');
                         app.sessionList[i].new_message = fileData;
                         break;
@@ -7051,6 +7054,7 @@
                             // todo 要不要加上sender?
                             // item.push({message: message, sender: app.userId, new_message: message});
                             // 只需新收到的消息的sender不与当前客服的ID相同就行。
+                            // alert("type start 3:" + type);
                             item.push({message: message, sender: 0, new_message: message});
                             messages[i].messages = item;
                         }
