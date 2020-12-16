@@ -5946,6 +5946,17 @@
         },
 
         mounted() {
+
+            document.onkeydown = function(e){
+                let focusEleId = document.activeElement.id;
+                var ev = document.all ? window.event : e;
+                // let textBox = document.getElementById('text-box');
+                if(focusEleId == 'text-box' && ev.keyCode==13) {
+                    app.sendMessage();
+                    return false;
+                }
+            }
+
             //ws 断线重连代码 start
             let heartBeatTime = 50;
             let heartCheck = {
@@ -7075,7 +7086,6 @@
             },
             // 上传图片
             uploadImg(){
-                alert('up')
                 let websocket = this.websocket;
                 let ws = websocket;
 
