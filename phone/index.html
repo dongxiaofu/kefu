@@ -166,7 +166,7 @@
             </ul>
         </div>
         <img src="images/hua.png" alt="" @click="upload"/>
-        <input type="file" name="files" id="upload-item">
+        <input type="file" name="files" id="upload-item" @change="uploadImg">
         <img src="images/xiaolian.png" alt="" @click="switchEmojiBox"/>
         <!-- 模拟textarea Start-->
         <span id="text-box" contenteditable="true">
@@ -372,11 +372,7 @@
                 console.log('start:', this.userId, this.fd);
                 let websocket = this.websocket;
                 let content = document.getElementById('text-box').innerHTML;
-                var inputElement = document.getElementById("upload-item");
-                var fileList = inputElement.files;
-                if (fileList.length > 0) {
-                    this.hasImage = true;
-                }
+
                 if (content == '') {
                     if (!this.hasImage) {
                         alert('请输入聊天内容');
@@ -447,66 +443,6 @@
                         console.log('messages.forEach2 ===================== end')
                         messages[i].messages = item;
                     }
-                }
-
-
-                let ws = websocket;
-                // 发送文件
-
-                for (var i = 0; i < fileList.length; i++) {
-                    // console.log(fileList[i]);
-                    // console.log(fileList[i].name);
-                    // //发送文件名
-                    // let fileType = 2;           // 文件名
-                    // let text = textInfo + fileList[i].name;
-                    // text += '|' + fileType;
-                    // ws.send(text);
-
-                    app.hasImage = true;
-
-                    var reader = new FileReader();
-                    reader.readAsDataURL(fileList[i]);
-                    reader.onload = function (e) {
-                        let fileType = 3;           // 图片
-                        let data = textInfo + e.target.result + '|' + fileType;
-                        ws.send(data);
-
-
-                        let date = new Date();
-                        let year = date.getFullYear();
-                        let month = date.getMonth() + 1;
-                        let day = date.getDate();
-                        let myArr = new Array(year, month, day);
-                        let dateText = myArr.join('');
-                        let messages = app.messages;
-                        console.log('=============let messages = app.messages start')
-                        console.log(messages);
-                        console.log('=============let messages = app.messages end')
-                        let length = messages.length;
-                        if (length == 0 || messages[0].date == undefined) {
-                            messages.pop();
-                            let tempItem = {date: dateText, messages: []};
-                            messages.push(tempItem);
-                        }
-                        for (let i = 0; i < messages.length; i++) {
-                            let item = messages[i];
-                            if (item.date == dateText) {
-                                let item = messages[i].messages;
-                                let value = data.split('|');
-                                let valueLength = value.length;
-                                let fileData = value[valueLength - 2];
-                                let fileType = 3;
-                                let message = {content: fileData, fileType: fileType,};
-                                item.push({message: message, sender: app.customerId});
-                                console.log('messages.forEach ===================== start')
-                                console.log(item);
-                                console.log('messages.forEach ===================== end')
-                                messages[i].messages = item;
-                            }
-                        }
-                    }
-
-                    document.getElementById("upload-item").value = '';
                 }
             },
 
@@ -870,7 +806,84 @@
                         messages[i].messages = item;
                     }
                 }
-            }
+            },
+            // 上传图片
+            uploadImg() {
+                alert('up')
+                let websocket = this.websocket;
+                let ws = websocket;
+                let inputElement = document.getElementById("upload-item");
+                let fileList = inputElement.files;
+
+                let username = 'user_' + Math.random();
+                let receiverId = this.userId;
+                let userId = this.userId;
+                let sessionId = this.sessionId;
+                let type = 2;
+                let textInfo = type + '|';
+                textInfo += userId + '|';
+                textInfo += this.fd + '|';
+                textInfo += sessionId + '|';
+                textInfo += receiverId + '|' + username + '|';
+
+
+                // 发送文件
+                for (let i = 0; i < fileList.length; i++) {
+                    // console.log(fileList[i]);
+                    // console.log(fileList[i].name);
+                    // //发送文件名
+                    // let fileType = 2;           // 文件名
+                    // let text = textInfo + fileList[i].name;
+                    // text += '|' + fileType;
+                    // ws.send(text);
+                    var reader = new FileReader();
+                    reader.readAsDataURL(fileList[i]);
+                    reader.onload = function (e) {
+                        let fileType = 3;           // 图片
+                        let data = textInfo + e.target.result + '|' + fileType;
+                        ws.send(data);
+                        let messages = app.messages;
+                        let date = new Date();
+                        let year = date.getFullYear();
+                        let month = date.getMonth() + 1;
+                        let day = date.getDate();
+                        let myArr = new Array(year, month, day);
+                        let dateText = myArr.join('');
+                        for (let i = 0; i < messages.length; i++) {
+                            let item = messages[i];
+                            if (item.date == dateText) {
+                                let item = messages[i].messages;
+                                let value = data.split('|');
+                                let valueLength = value.length;
+                                let fileData = value[valueLength - 2];
+                                let fileType = 3;
+                                let message = {content: fileData, fileType: fileType,};
+                                item.push({message: message, sender: app.customerId});
+                                console.log('messages.forEach ===================== start')
+                                console.log(item);
+                                console.log('messages.forEach ===================== end')
+                                messages[i].messages = item;
+                            }
+                        }
+
+
+
+                        console.log('=============let messages = app.messages start')
+                        console.log(messages);
+                        console.log('=============let messages = app.messages end')
+                        let length = messages.length;
+                        if (length == 0 || messages[0].date == undefined) {
+                            messages.pop();
+                            let tempItem = {date: dateText, messages: []};
+                            messages.push(tempItem);
+                        }
+
+                    }
+
+                    document.getElementById("upload-item").value = '';
+                }
+            },
+
         },
     })
 </script>

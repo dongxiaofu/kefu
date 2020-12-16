@@ -3698,7 +3698,8 @@
                                                     <!-- <img class="injectable hw-20" src="./../assets/media/heroicons/outline/plus-circle.svg" alt=""> -->
                                                 </button>
                                                 <div class="dropdown-menu" style="display: none;">
-                                                    <input type="file" name="files" id="upload-item">
+                                                    <input type="file" name="files" id="upload-item"
+                                                           @change="uploadImg">
                                                     <a class="dropdown-item" href="#">
                                                         <!-- Default :: Inline SVG -->
                                                         <svg class="hw-20 mr-2" fill="none" viewBox="0 0 24 24"
@@ -5932,7 +5933,6 @@
 
             wsServer: '',
             wsServerWithoutToken: '',
-            hasImage: false,
         },
         http: {
             root: '/',
@@ -6156,7 +6156,7 @@
                     console.log(result);
                     console.log('---------clearSession end------');
                     if (result.code != 0) {
-                        alert('备注失败');
+                        alert('修改失败');
                         return;
                     }
                     this.oldSessionRemark = remark;
@@ -6286,16 +6286,9 @@
                 console.log(content)
                 console.log('sendMessage end=====================')
 
-                var inputElement = document.getElementById("upload-item");
-                var fileList = inputElement.files;
-                if (fileList.length > 0) {
-                    this.hasImage = true;
-                }
                 if (content == '') {
-                    if (!this.hasImage) {
-                        alert('请输入聊天内容');
-                        return;
-                    }
+                    alert('请输入聊天内容');
+                    return;
                 }
 
                 // if (content == '') {
@@ -6378,6 +6371,8 @@
                     document.getElementById('text-box').innerHTML = '';
                 }
 
+                return;
+
 
                 let ws = websocket;
                 // 发送文件
@@ -6398,7 +6393,6 @@
                         let fileType = 3;           // 图片
                         let data = textInfo + e.target.result + '|' + fileType;
                         ws.send(data);
-
 
                         let date = new Date();
                         let year = date.getFullYear();
@@ -7078,6 +7072,86 @@
                 // alert(4444)
                 this.$refs.audio.currentTime = 0 // 从头开始播放提示音
                 this.$refs.audio.play()
+            },
+            // 上传图片
+            uploadImg(){
+                alert('up')
+                let websocket = this.websocket;
+                let ws = websocket;
+
+                let username = 'user_' + Math.random();
+                //|作为数据包分割线
+                let receiverId = this.receiverId;
+                // let userId = this.userId;
+                let userId = this.user.id;
+                let sessionId = this.sessionId;
+                let type = 1;
+                // let text = type + '|';
+                // text += userId + '|';
+                // text += this.fd + '|';
+                // text += sessionId + '|';
+                // text += receiverId + '|' + username + '|' + content;
+                // console.log('============ send start')
+                // console.log(text);
+                // console.log('============ send end')
+
+                let textInfo = type + '|';
+                textInfo += userId + '|';
+                textInfo += this.fd + '|';
+                textInfo += sessionId + '|';
+                textInfo += receiverId + '|' + username + '|';
+
+                // 发送文件
+                var inputElement = document.getElementById("upload-item");
+                var fileList = inputElement.files;
+                for (var i = 0; i < fileList.length; i++) {
+                    console.log(fileList[i]);
+                    console.log(fileList[i].name);
+                    //发送文件名
+                    // let fileType = 2;           // 文件名
+                    // let text = textInfo + fileList[i].name;
+                    // text += '|' + fileType;
+                    // ws.send(text);
+
+                    var reader = new FileReader();
+                    reader.readAsDataURL(fileList[i]);
+                    reader.onload = function (e) {
+                        let fileType = 3;           // 图片
+                        let data = textInfo + e.target.result + '|' + fileType;
+                        ws.send(data);
+
+                        let date = new Date();
+                        let year = date.getFullYear();
+                        let month = date.getMonth() + 1;
+                        let day = date.getDate();
+                        let myArr = new Array(year, month, day);
+                        let dateText = myArr.join('');
+                        let messages = app.messages;
+                        console.log('=============let messages = app.messages start')
+                        console.log(messages);
+                        console.log('=============let messages = app.messages end')
+                        let length = messages.length;
+                        if (length == 0) {
+                            let tempItem = {date: dateText, messages: []};
+                            messages.push(tempItem);
+                        }
+                        for (let i = 0; i < messages.length; i++) {
+                            let item = messages[i];
+                            if (item.date == dateText) {
+                                let item = messages[i].messages;
+                                let value = data.split('|');
+                                let valueLength = value.length;
+                                let fileData = value[valueLength - 2];
+                                let fileType = 3;
+                                let message = {content: fileData, fileType: fileType,};
+                                item.push({message: message, sender: app.user.id});
+                                messages[i].messages = item;
+                            }
+                        }
+                    }
+                }
+                // 上传文件后，需要再次选择文件
+                inputElement.value = '';
             },
         },
 
