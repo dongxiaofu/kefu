@@ -295,11 +295,15 @@
                 wsServer += '&url=' + webHost;
                 this.wsServer = wsServer;
                 this.initEventHandle(wsServer)
-                let isFirst = this.getcookie('isFirst');
+                // let isFirst = this.getcookie('isFirst');
+                let isFirst = localStorage.getItem("isFirst");
+                if (common.debug) {
+                    alert("isFirst:" + isFirst);
+                }
                 if (isFirst != 1) {
                     setTimeout(function () {
                         window.location = location.href;
-                    }, 2000);
+                    }, 4000);
 
                 }
                 //ws 断线重连代码 end
@@ -791,7 +795,9 @@
                     };
                     let resString = JSON.stringify(res); // 转字符串.
                     document.cookie = 'resString=' + resString;
-                    document.cookie = 'isFirst=1';
+                    // document.cookie = 'isFirst=1';
+                    localStorage.setItem("isFirst", "1");
+
 
                     app.userId = userId;
                     app.fd = fd;

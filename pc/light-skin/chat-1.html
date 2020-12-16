@@ -5947,7 +5947,7 @@
 
         mounted() {
             //ws 断线重连代码 start
-            let heartBeatTime = 120;
+            let heartBeatTime = 30;
             let heartCheck = {
                 timeout: heartBeatTime * 1000,  //  心跳检测时长
                 timeoutObj: null, // 定时变量
@@ -6958,8 +6958,6 @@
                     // })
                 }
 
-                app.playAudio();
-
                 // 游客开启会话时发来的
                 // 会不会重复使会话列表出现重复的会话？不能肯定，添加时去个重吧
                 if (type == 2) {
@@ -6996,10 +6994,14 @@
                         if (common.debug) {
                             alert('token:' + token);
                         }
-                        app.getSession(sessionId);
+                        // app.getSession(sessionId);
+                        // app.playAudio();
+                        app.getSessionList();
                     }
                     return;
                 }
+
+                app.playAudio();
 
                 let date = new Date();
                 let year = date.getFullYear();
