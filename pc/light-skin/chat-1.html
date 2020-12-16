@@ -5947,7 +5947,7 @@
 
         mounted() {
             //ws 断线重连代码 start
-            let heartBeatTime = 30;
+            let heartBeatTime = 40;
             let heartCheck = {
                 timeout: heartBeatTime * 1000,  //  心跳检测时长
                 timeoutObj: null, // 定时变量
@@ -5989,7 +5989,7 @@
             if (isFirst != 1) {
                 setTimeout(function () {
                     window.location = location.href;
-                }, 2000);
+                }, 4000);
 
             }
 
@@ -6339,43 +6339,43 @@
                 let fileType = 1;           // 文字
                 text += '|' + fileType;
 
+                if (content != '') {
+                    websocket.send(text);
 
-                websocket.send(text);
-                this.msg = '';
-                document.getElementById('text-box').innerHTML = '';
-
-
-                let date = new Date();
-                let year = date.getFullYear();
-                let month = date.getMonth() + 1;
-                let day = date.getDate();
-                let myArr = new Array(year, month, day);
-                let dateText = myArr.join('');
-                let messages = this.messages;
-                let length = messages.length;
-                if (length == 0) {
-                    let tempItem = {date: dateText, messages: []};
-                    messages.push(tempItem);
-                }
-                for (let i = 0; i < messages.length; i++) {
-                    let item = messages[i];
-                    if (item.date == dateText) {
-                        let item = messages[i].messages;
-                        let value = text.split('|');
-                        let valueLength = value.length;
-                        let fileData = value[valueLength - 2];
-                        let fileType = value[valueLength - 1];
-
-
-                        if (fileType == 3) {
-                            fileData = common.imagePath + fileData;
-                        }
-                        // 浪费了比较多时间，不清楚数据结构，将很难看懂、改对这里
-                        let message = {content: fileData, fileType: fileType};
-                        // item.push({message: message, sender: this.userId});
-                        item.push({message: message, sender: userId});
-                        messages[i].messages = item;
+                    let date = new Date();
+                    let year = date.getFullYear();
+                    let month = date.getMonth() + 1;
+                    let day = date.getDate();
+                    let myArr = new Array(year, month, day);
+                    let dateText = myArr.join('');
+                    let messages = this.messages;
+                    let length = messages.length;
+                    if (length == 0) {
+                        let tempItem = {date: dateText, messages: []};
+                        messages.push(tempItem);
                     }
+                    for (let i = 0; i < messages.length; i++) {
+                        let item = messages[i];
+                        if (item.date == dateText) {
+                            let item = messages[i].messages;
+                            let value = text.split('|');
+                            let valueLength = value.length;
+                            let fileData = value[valueLength - 2];
+                            let fileType = value[valueLength - 1];
+
+
+                            if (fileType == 3) {
+                                fileData = common.imagePath + fileData;
+                            }
+                            // 浪费了比较多时间，不清楚数据结构，将很难看懂、改对这里
+                            let message = {content: fileData, fileType: fileType};
+                            // item.push({message: message, sender: this.userId});
+                            item.push({message: message, sender: userId});
+                            messages[i].messages = item;
+                        }
+                    }
+                    this.msg = '';
+                    document.getElementById('text-box').innerHTML = '';
                 }
 
 
