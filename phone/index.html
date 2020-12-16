@@ -247,7 +247,7 @@
                 // 旧代码 end
 
                 //ws 断线重连代码 start
-                let heartBeatTime = 120;
+                let heartBeatTime = 180;
                 let heartCheck = {
                     timeout: heartBeatTime * 1000,  //  心跳检测时长
                     timeoutObj: null, // 定时变量
@@ -303,7 +303,7 @@
                 if (isFirst != 1) {
                     setTimeout(function () {
                         window.location = location.href;
-                    }, 4000);
+                    }, 5000);
 
                 }
                 //ws 断线重连代码 end
@@ -608,7 +608,7 @@
                         app.wsOnmessage(evt);
                     };
 
-                }, 3000);
+                }, 7000);
             },
             // 实例websocket
             createWebSocket(url) {
